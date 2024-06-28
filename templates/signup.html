@@ -25,16 +25,46 @@
                   </li>
                 </ul>
               </div>
-                <form class="d-flex">
+                <form class="d-flex" method="post" action="/sso">
                     <div class="input-group">
                         <span class="input-group-text" id="basic-addon1">@</span>
-                        <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+                        <input type="text" class="form-control" placeholder="Username" required aria-label="Username" aria-describedby="basic-addon1">
                     </div>
-                    <input class="form-control me-2" type="search" placeholder="Password" aria-label="Password">
+                    <input class="form-control me-2" type="search" placeholder="Password" required aria-label="Password">
                     <button class="btn btn-outline-success" type="submit">Login</button>
                 </form>
             </div>
           </nav>
+          <center>
+            <form action="/newacc" method="post" style="width:30%;">
+                <br>
+                <br>
+                <h2 style="font-family: sans-serif;">Signup</h2>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="basic-addon1">@</span>
+                    <input type="text" class="form-control" placeholder="Username" required aria-label="Username" aria-describedby="basic-addon1" name="username" id="username">
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      <input type="text" class="form-control" placeholder="First name" required aria-label="First name" name="firstname" id="firstname">
+                    </div>
+                    <div class="col">
+                      <input type="text" class="form-control" placeholder="Last name" required aria-label="Last name" name="lastname" id="lastname">
+                    </div>
+                  </div>
+                  <br>
+                  <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Email" required aria-label="Email" name="email" id="email">
+                  </div>
+                  <div class="input-group mb-3">
+                    <input type="password" class="form-control" placeholder="Password" required aria-label="Password" name="password" id="password">
+                  </div>                  
+                  <div class="col-12">
+                    <p style="font-family: sans-serif;">{{e}}</p>
+                    <button type="submit" class="btn btn-primary">Register</button>
+                  </div>
+            </form>
+          </center>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     </body>
