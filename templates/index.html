@@ -28,12 +28,12 @@
                   </li>
                 </ul>
               </div>
-                <form class="d-flex">
+                <form class="d-flex" method="post" action="/sso">
                     <div class="input-group">
                         <span class="input-group-text" id="basic-addon1">@</span>
-                        <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+                        <input type="text" class="form-control" placeholder="Username" required aria-label="Username" aria-describedby="basic-addon1">
                     </div>
-                    <input class="form-control me-2" type="search" placeholder="Password" aria-label="Password">
+                    <input class="form-control me-2" type="search" placeholder="Password" required aria-label="Password">
                     <button class="btn btn-outline-success" type="submit">Login</button>
                 </form>
             </div>
