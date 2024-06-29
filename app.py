@@ -40,6 +40,8 @@ def keygen(hash = uuid.uuid4().hex):
 
 @app.route('/login')
 def login():
+    if 'e' in request.form:
+        return render_template('login.html', e = 'Username or password incorrect')
     return render_template('login.html')
 
 @app.route('/')
@@ -80,7 +82,7 @@ def sso():
                 resp.set_cookie('key',otp)
                 identifiers.update({otp,i})
                 return '<body onload=location.replace("/home")></body>'
-    return '<body onload=location.replace("/login")></body>'
+    return '<body onload=location.replace("/login?e=e")></body>'
 @app.route('/home')
 def home():
     key = request.cookies.get('key')
