@@ -57,7 +57,7 @@ def signup():
 @app.route('/newacc', methods = ['POST'])
 def newacc():
     if 'email' in request.form and 'username' in request.form and 'password' in request.form and 'firstname' in request.form and 'lastname' in request.form:
-        for i in user:
+        for i in users:
             if i.email == request.form['email']:
                 return '<body onload=location.replace("/signup?e=e")></body>'
             if i.username == request.form['username']:
