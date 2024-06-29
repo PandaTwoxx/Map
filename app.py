@@ -22,7 +22,7 @@ class user:
     email = ''
     password = ''
 
-    def __init__(un,e,p,fn,ln):
+    def __init__(self,un,e,p,fn,ln):
         username = un
         email = e
         password = p
