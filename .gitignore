@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 .DS_STORE
+Session_Logs/
 
 # C extensions
 *.so
