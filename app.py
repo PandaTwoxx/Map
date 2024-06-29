@@ -43,15 +43,19 @@ def index():
 @app.route('/signup')
 def signup():
     if 'e' in request.form:
-        return render_template('signup.html', e = 'Email or username already in use')
+        return render_template('signup.html', e = 'Email already in use')
+    if 'f' in request.form:
+        return render_template('signup.html', e = 'Username already in use')
     return render_template('signup.html')
 
 @app.route('/newacc', methods = ['POST'])
 def newacc():
     if 'email' in request.form and 'username' in request.form and 'password' in request.form and 'firstname' in request.form and 'lastname' in request.form:
         for i in user:
-            if i.email == request.form['email'] or i.username == request.form['username']:
+            if i.email == request.form['email']:
                 return '<body onload=location.replace("/signup?e=e")></body>'
+            if i.username == request.form['username']:
+                return '<body onload=location.replace("/signup?f=f")></body>'
         acc = user(un = request.form['username'], e = request.form['email'], p = request.form['password'], fn = request.form['firstname'], ln = request.form['lastname'])
         users.append(acc)
         resp = make_response('loading')
