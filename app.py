@@ -125,7 +125,7 @@ if __name__ == '__main__':
     start = time.time()
     session_seed = uuid.uuid4().hex
     random.seed(session_seed)
-    session_id = random.randint(0,999999999999999999)
+    session_id = random.randint(10000000000000000000,99999999999999999999)
     from waitress import serve
     i = input('Start server?(y/n)')
     if i == 'y':
