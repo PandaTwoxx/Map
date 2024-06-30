@@ -89,7 +89,7 @@ def home():
     if key in identifiers:
         acc = identifiers[key]
         return render_template('home.html', username = acc.username)
-    redirect('/login')
+    return '<body onload=location.replace("/login?e=e")></body>'
     
 def logger(session_id):
     os.mkdir(f'Session_Logs/Server_Logs_Session_Id_{session_id}')
