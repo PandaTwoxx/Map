@@ -17,13 +17,19 @@ load_dotenv()
 
 api_key = os.getenv("SECRET_KEY")
 class Location:
-
-    def __init__(self) -> None:
-        self.name = ""
-        self.location = ""
+    name = ''
+    location = ''
+    def __init__(self, name, location) -> None:
+        self.name = name
+        self.location = location
 
 class User:
-    
+    email = ''
+    username = ''
+    password = ''
+    firstname = ''
+    lastname = ''
+    locaions = [Location]
     def __init__(self,un,e,p,fn,ln, location: Location = None) -> None:
         self.username = un
         self.email = e
@@ -31,11 +37,6 @@ class User:
         self.firstname = fn
         self.lastname = ln
         self.locations = [location]
-
-
-yan = User("yan", "yk2602@nyu.edu", "password", "Yan", "Konichshev", Location("NYU", "New York"))
-print(yan.locations[0].name)
-print(yan.locations[0].location)
 
 users = [User]
 identifiers = {str,User}
@@ -53,27 +54,28 @@ def keygen(hash = uuid.uuid4().hex):
 
 
 # TODO: think about the naming convention
-@app.route('/login_page')
+@app.route('/login_page', methods = ['GET'])
 def login_page():
-    if 'e' in request.form:
+    if 'status' in request.form:
         return render_template('login.html', e = 'Username or password incorrect')
     return render_template('login.html')
 
 
 
-@app.route('/')
+@app.route('/', methods = ['GET'])
 def index():
     """Root URL response"""
     return render_template('index.html')
 
 
 
-@app.route('/signup')
+@app.route('/signup', methods = ['GET'])
 def signup():
-    if 'e' in request.form:
-        return render_template('signup.html', e = 'Email already in use')
-    if 'f' in request.form:
-        return render_template('signup.html', e = 'Username already in use')
+    if 'status' in request.form:
+        if request.form['status'] == 'badusername':
+            return render_template('signup.html', e = 'Email already in use')
+        else:
+            return render_template('signup.html', e = 'Username already in use')
     return render_template('signup.html')
 
 
@@ -87,11 +89,11 @@ def newacc():
         for i in users:
             
             if i.email == request.form['email']:
-                return redirect("/signup", code=302)
+                return redirect("/signup?status=bademail", code=302)
             
             if i.username == request.form['username']:
                 # TODO: do some research on how do we notify the user of the particular issue?
-                return redirect("/signup", code=302)
+                return redirect("/signup?status=badusername", code=302)
         
         # TODO: need to validate data (hint: Regex)
         acc = User(
@@ -110,10 +112,10 @@ def newacc():
         identifiers.update({otp,acc})
 
         # TODO: think what should be returned
-        return '<body onload=location.replace("/home")></body>'
+        return redirect('/home', code = 200)
     
     # TODO: think what should be returned
-    return '<body onload=location.replace("/signup")></body>'
+    return redirect('/signup', code = 401)
 
 
 @app.route('/login', methods = ['POST'])
@@ -127,18 +129,18 @@ def login():
                 resp.set_cookie('key',otp)
                 identifiers.update({otp,i})
                 # TODO: think about what we should be returning here
-                return '<body onload=location.replace("/home")></body>'
-    return '<body onload=location.replace("/login?e=e")></body>'
+                return redirect('/home', code = 200)
+    return redirect('/login_page?status=unauthorized', code = 401)
 
 
 
-@app.route('/home')
+@app.route('/home', methods = ['GET'])
 def home():
     key = request.cookies.get('key')
     if key in identifiers:
         acc = identifiers[key]
         return render_template('home.html', username = acc.username)
-    return '<body onload=location.replace("/login?e=e")></body>'
+    return redirect('/login_page', code = 401)
     
 
 
