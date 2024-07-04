@@ -14,13 +14,16 @@ import time
 load_dotenv()
 
 api_key = os.getenv("SECRET_KEY")
-
+class Location:
+    name = ''
+    location = ''
 class user:
     username = ''
     firstname = ''
     lastname = ''
     email = ''
     password = ''
+    locations = [Location]
 
     def __init__(self,un,e,p,fn,ln):
         username = un
