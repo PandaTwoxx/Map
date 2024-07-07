@@ -4,13 +4,15 @@ import os
 import random
 import pickle
 import os.path
+import re
 
-from flask import Flask, render_template, request, redirect, make_response
+from flask import Flask, render_template, request, redirect, url_for, abort
 from waitress import serve
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from pathlib import Path
-
+from flask_login import LoginManager, login_user, login_required, logout_user, UserMixin
+from http import HTTPStatus
 
 
 load_dotenv()
@@ -25,7 +27,8 @@ class Location:
         self.location = location
         self.description = description
 
-class User:
+class User(UserMixin):
+    id = ''
     email = ''
     username = ''
     password = ''
@@ -39,14 +42,49 @@ class User:
         self.firstname = fn
         self.lastname = ln
         self.locations = [location]
+        self.id = uuid.uuid4().hex
+    def get_id(self):
+        return self.id
 
 users = [User]
-identifiers = {str,User}
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = uuid.uuid4().hex
 
+login_manager = LoginManager()
+login_manager.init_app(app)
 
+login_manager.login_view = "/login_page"
+login_manager.refresh_view = "/login_page"
+login_manager.needs_refresh_message = (
+    u"To protect your account, please reauthenticate to access this page."
+)
+login_manager.needs_refresh_message_category = "info"
+
+def validate_form(user: User):
+    email_regex = ''
+    with open('regex.txt', 'r') as file:
+        email_regex = file.readline()
+        file.close()
+    pattern = re.compile(email_regex)
+    for i in users:         
+        if i.email == user.email:
+            return 'bademail'
+        if i.username == user.username:
+            return 'badusername'
+    if len(user.password) < 8:
+        return 'invalidpass'
+    if len(user.username) < 1:
+        return 'invalidusername'
+    if len(user.email) < 1:
+        return 'invalidemail'
+    if len(user.firstname) < 1:
+        return 'badfname'
+    if len(user.lastname) < 1:
+        return 'invalidlnames'
+    if not(pattern.match(user.email)):
+        return 'invalidemail'
+    return 'valid'
 
 def keygen(hash = uuid.uuid4().hex):
     """
@@ -62,7 +100,11 @@ def login_page():
         return render_template('login.html', e = 'Username or password incorrect')
     return render_template('login.html')
 
-
+@login_manager.unauthorized_handler
+def unauthorized():
+    if request.blueprint == 'api':
+        abort(HTTPStatus.UNAUTHORIZED)
+    return redirect(url_for('login_page'))
 
 @app.route('/', methods = ['GET'])
 def index():
@@ -74,10 +116,7 @@ def index():
 @app.route('/signup', methods = ['GET'])
 def signup():
     if 'status' in request.form:
-        if request.form['status'] == 'badusername':
-            return render_template('signup.html', e = 'Email already in use')
-        else:
-            return render_template('signup.html', e = 'Username already in use')
+        pass
     return render_template('signup.html')
 
 
@@ -88,30 +127,19 @@ def newacc():
     This endpoint is creating new User account.
     """
     if 'email' in request.form and 'username' in request.form and 'password' in request.form and 'firstname' in request.form and 'lastname' in request.form:
-        for i in users:
-            
-            if i.email == request.form['email']:
-                return redirect("/signup?status=bademail", code=302)
-            
-            if i.username == request.form['username']:
-                # TODO: do some research on how do we notify the user of the particular issue?
-                return redirect("/signup?status=badusername", code=302)
-        
         # TODO: need to validate data (hint: Regex)
         acc = User(
             un = request.form['username'], 
             e = request.form['email'],
-            p = request.form['password'], 
+            p = generate_password_hash(request.form['password']), 
             fn = request.form['firstname'], 
             ln = request.form['lastname']
         )
 
+        #if validate_form(acc) != 'valid':
+            #return redirect(location = f'/signup?status={validate_form(acc)}', code = 401)
         users.append(acc)
-        # TODO: figure out what is it doing?
-        resp = make_response('loading')
-        otp = keygen()
-        resp.set_cookie('key',otp)
-        identifiers.update({otp,acc})
+        login_user(acc)
 
         # TODO: think what should be returned
         return redirect('/home', code = 200)
@@ -119,33 +147,36 @@ def newacc():
     # TODO: think what should be returned
     return redirect('/signup', code = 401)
 
+@login_manager.user_loader
+def user_loader(user_id):
+    for i in users:
+        if i.id == user_id:
+            return i
 
 @app.route('/login', methods = ['POST'])
 def login():
     # TODO: how to make this look better?
-    if 'email' in request.form and 'password' in request.form:
+    if 'username' in request.form and 'password' in request.form:
         for i in users:
-            if i.username == request.form['email'] and check_password_hash(request.form['password'], i.password):
-                resp = make_response('loading')
-                otp = keygen()
-                resp.set_cookie('key',otp)
-                identifiers.update({otp,i})
+            if i.username == request.form['username'] and check_password_hash(request.form['password'], i.password):
+                login_user(i)
                 # TODO: think about what we should be returning here
                 return redirect('/home', code = 200)
-    if request.cookies.get('key') in identifiers:
-        return redirect('/home', code = 200)
     return redirect('/login_page?status=unauthorized', code = 401)
 
 
 
 @app.route('/home', methods = ['GET'])
+@login_required
 def home():
-    key = request.cookies.get('key')
-    if key in identifiers:
-        acc = identifiers[key]
-        return render_template('home.html', username = acc.username)
-    return redirect('/login_page', code = 401)
+    return render_template('home.html')
     
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect('/')
 
 
 def logger(session_id):
@@ -157,9 +188,6 @@ def logger(session_id):
     with open(f'Session_Logs/Server_Logs_Session_Id_{session_id}/User-data.pkl', 'wb') as Session_Logs:
         Session_Logs.write(pickle.dumps(users))
         Session_Logs.close()
-    with open(f'Session_Logs/Server_Logs_Session_Id_{session_id}/otp-data.pkl', 'wb') as Session_Logs:
-        Session_Logs.write(pickle.dumps(identifiers))
-        Session_Logs.close()
     with open('Session_Logs/previous_session.txt', 'w') as prev:
         prev.write(str(session_id))
         prev.close()
@@ -167,6 +195,8 @@ def logger(session_id):
 
 
 if __name__ == '__main__':
+    if not(os.path.exists(Path('Session_Logs/'))):
+        os.mkdir('Session_Logs')
     file_path = Path('Session_Logs/previous_session.txt')
     i = input("Should server read save data (y/n)")
     if os.path.exists(file_path) and i == "y":
@@ -176,9 +206,6 @@ if __name__ == '__main__':
             session_id = prev.read()
         with open(f'Session_Logs/Server_Logs_Session_Id_{session_id}/User-data.pkl', 'rb') as Session_Logs:
             users = pickle.load(Session_Logs)
-            Session_Logs.close()
-        with open(f'Session_Logs/Server_Logs_Session_Id_{session_id}/otp-data.pkl', 'rb') as Session_Logs:
-            identifiers = pickle.load(Session_Logs)
             Session_Logs.close()
         print('Sucessfully read save data')
     start = time.time()
