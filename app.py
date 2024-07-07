@@ -5,7 +5,7 @@ import random
 import pickle
 import os.path
 
-from flask import Flask, render_template, request, redirect, make_response, jsonify
+from flask import Flask, render_template, request, redirect, make_response
 from waitress import serve
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
@@ -19,9 +19,11 @@ api_key = os.getenv("SECRET_KEY")
 class Location:
     name = ''
     location = ''
-    def __init__(self, name, location) -> None:
+    description = ''
+    def __init__(self, name, location, description) -> None:
         self.name = name
         self.location = location
+        self.description = description
 
 class User:
     email = ''
@@ -123,13 +125,15 @@ def login():
     # TODO: how to make this look better?
     if 'email' in request.form and 'password' in request.form:
         for i in users:
-            if i.username == request.form['email'] and i.password == request.form['password']:
+            if i.username == request.form['email'] and check_password_hash(request.form['password'], i.password):
                 resp = make_response('loading')
                 otp = keygen()
                 resp.set_cookie('key',otp)
                 identifiers.update({otp,i})
                 # TODO: think about what we should be returning here
                 return redirect('/home', code = 200)
+    if request.cookies.get('key') in identifiers:
+        return redirect('/home', code = 200)
     return redirect('/login_page?status=unauthorized', code = 401)
 
 
