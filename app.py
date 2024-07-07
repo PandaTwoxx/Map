@@ -113,6 +113,16 @@ def index():
 
 
 
+@app.route('/add_location', methods = ['GET'])
+@login_required
+def add_location():
+    """
+    This endpoint is for adding a location
+    """
+    return render_template('add_location.html')
+
+
+
 @app.route('/signup', methods = ['GET'])
 def signup():
     if 'status' in request.form:
