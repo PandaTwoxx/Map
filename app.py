@@ -11,7 +11,7 @@ from waitress import serve
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from pathlib import Path
-from flask_login import LoginManager, login_user, login_required, logout_user, UserMixin
+from flask_login import LoginManager, login_user, login_required, current_user, logout_user, UserMixin
 from http import HTTPStatus
 
 
@@ -34,7 +34,7 @@ class User(UserMixin):
     password = ''
     firstname = ''
     lastname = ''
-    locaions = [Location]
+    locations = [Location]
     def __init__(self,un,e,p,fn,ln, location: Location = None) -> None:
         self.username = un
         self.email = e
@@ -111,6 +111,19 @@ def index():
     """Root URL response"""
     return render_template('index.html')
 
+@app.route('/location_adder', methods = ['PUT'])
+@login_required
+def location_adder():
+    if 'name' in request.form:
+        new_location = Location(
+            name = request.form['name'],
+            description = request.form['description'],
+            location = request.form['location'],
+        )
+        for i in users:
+            if i == current_user:
+                i.locations.append(new_location)
+    return redirect('/add_location')
 
 
 @app.route('/add_location', methods = ['GET'])
