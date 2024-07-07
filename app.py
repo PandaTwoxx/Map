@@ -158,7 +158,7 @@ def login():
     # TODO: how to make this look better?
     if 'username' in request.form and 'password' in request.form:
         for i in users:
-            if i.username == request.form['username'] and check_password_hash(request.form['password'], i.password):
+            if i.username == request.form['username'] and check_password_hash(i.password, request.form['password']):
                 login_user(i)
                 # TODO: think about what we should be returning here
                 return redirect('/home', code = 200)
