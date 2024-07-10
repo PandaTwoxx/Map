@@ -5,9 +5,8 @@ import random
 import pickle
 import os.path
 import re
-import requests
 
-from service.classes import User, Coordinate, Location
+from service.classes import User, Location
 from flask import Flask, render_template, request, redirect, url_for, abort
 from waitress import serve
 from werkzeug.security import generate_password_hash, check_password_hash
