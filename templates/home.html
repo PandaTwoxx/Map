@@ -24,15 +24,17 @@
               </div>
             </div>
           </nav>
-          {% for i in current_user.locations %}
-            <div class="card" style="width: 18rem;">
-                <img src="..." class="card-img-top" alt="Location image">
-                <div class="card-body">
-                    <h5 class="card-title">{{i.name}}</h5>
-                    <p class="card-text">{{i.description}}.</p>
-                    <a href="/location/{{i.name}}" class="btn btn-primary">Go to this location</a>
-                </div>
-          </div>
-          {% endfor %}
+          {% if current_user.location %}
+            {% for i in current_user.locations %}
+              <div class="card" style="width: 18rem;">
+                  <img src="..." class="card-img-top" alt="Location image">
+                  <div class="card-body">
+                      <h5 class="card-title">{{i.name}}</h5>
+                      <p class="card-text">{{i.description}}.</p>
+                      <a href="/location/{{i.name}}" class="btn btn-primary">Go to this location</a>
+                  </div>
+            </div>
+            {% endfor %}
+          {% endif %}
     </body>
 </html>
