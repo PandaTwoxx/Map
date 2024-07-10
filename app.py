@@ -5,24 +5,35 @@ import random
 import pickle
 import os.path
 import re
+import requests
 
-from flask import Flask, render_template, request, redirect, url_for, abort
+from flask import Flask, render_template, request, redirect, url_for, abort, flash
 from waitress import serve
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from pathlib import Path
 from flask_login import LoginManager, login_user, login_required, current_user, logout_user, UserMixin
 from http import HTTPStatus
+from requests.structures import CaseInsensitiveDict
 
 
 load_dotenv()
 
-api_key = os.getenv("SECRET_KEY")
+geocoding_api_key = os.getenv("GEO_CODING_API")
+googlemaps_api_key = os.getenv("GOOGLE_MAPS_API")
+
+class Coordinate:
+    lon = ''
+    lat = ''
+    def __init__(self, lon, lat) -> None:
+        self.lon = lon
+        self.lat = lat
+
 class Location:
     name = ''
-    location = ''
+    location = Coordinate
     description = ''
-    def __init__(self, name, location, description) -> None:
+    def __init__(self, name, description, location = None) -> None:
         self.name = name
         self.location = location
         self.description = description
@@ -92,6 +103,23 @@ def keygen(hash = uuid.uuid4().hex):
     """
     return generate_password_hash(hash)
 
+def geo_code(address: str):
+    url = f"https://api.geoapify.com/v1/geocode/search?text={address.replace('+', '%20')}&apiKey={geocoding_api_key}"
+
+    headers = CaseInsensitiveDict()
+    headers["Accept"] = "application/json"
+
+    resp = requests.get(url, headers=headers)
+
+    if resp.status_code == 200:
+        coordinate = Coordinate(
+            lon = resp.features[0].properties['lon'],
+            lat = resp.features[0].properties['lat']
+        )
+        return coordinate
+    else:
+        flash('Bad address or server')
+        return None
 
 # TODO: think about the naming convention
 @app.route('/login_page', methods = ['GET'])
@@ -111,19 +139,25 @@ def index():
     """Root URL response"""
     return render_template('index.html')
 
-@app.route('/location_adder', methods = ['PUT'])
+@app.route('/location_adder', methods = ['POST','GET'])
 @login_required
 def location_adder():
-    if 'name' in request.form:
-        new_location = Location(
-            name = request.form['name'],
-            description = request.form['description'],
-            location = request.form['location'],
-        )
+    if 'name' in request.form and 'description' in request.form and 'location' in request.form:
+        coordinate = geo_code(request.form['location'])
+        new_location = None
+        if coordinate is not None:
+            new_location = Location(
+                name = request.form['name'],
+                description = request.form['description'],
+                location = coordinate,
+            )
+        else:
+            return redirect(url_for("add_location"))
         for i in users:
             if i == current_user:
                 i.locations.append(new_location)
-    return redirect('/add_location')
+        return
+    return redirect(url_for("add_location"))
 
 
 @app.route('/add_location', methods = ['GET'])
@@ -158,17 +192,14 @@ def newacc():
             fn = request.form['firstname'], 
             ln = request.form['lastname']
         )
-
-        #if validate_form(acc) != 'valid':
-            #return redirect(location = f'/signup?status={validate_form(acc)}', code = 401)
         users.append(acc)
         login_user(acc)
 
         # TODO: think what should be returned
-        return redirect('/home', code = 200)
+        return redirect(url_for('home'), code = 200)
     
     # TODO: think what should be returned
-    return redirect('/signup', code = 401)
+    return redirect(url_for('signup'), code = 401)
 
 @login_manager.user_loader
 def user_loader(user_id):
@@ -184,8 +215,8 @@ def login():
             if i.username == request.form['username'] and check_password_hash(i.password, request.form['password']):
                 login_user(i)
                 # TODO: think about what we should be returning here
-                return redirect('/home', code = 200)
-    return redirect('/login_page?status=unauthorized', code = 401)
+                return redirect(url_for('home'), code = 200)
+    return redirect(url_for('login_page', status = 'unauthorized'), code = 401)
 
 
 
