@@ -7,7 +7,7 @@ from pathlib import Path
 from waitress import serve
 from service.routes import app, load, logger
 
-if __name__ == "__main__":
+def beginServer():
     if not (os.path.exists(Path("Session_Logs/"))):
         os.mkdir("Session_Logs")
     file_path = Path("Session_Logs/previous_session.txt")
