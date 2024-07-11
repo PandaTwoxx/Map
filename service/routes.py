@@ -1,7 +1,5 @@
-import time
 import uuid
 import os
-import random
 import pickle
 import os.path
 import re
@@ -11,7 +9,6 @@ from flask import Flask, render_template, request, redirect, url_for, abort
 from waitress import serve
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
-from pathlib import Path
 from flask_login import (
     LoginManager,
     login_user,
@@ -199,7 +196,7 @@ def logout():
     return redirect("/")
 
 
-def logger(session_id):
+def logger(session_id, delta):
     os.mkdir(f"Session_Logs/Server_Logs_Session_Id_{session_id}")
     with open(
         f"Session_Logs/Server_Logs_Session_Id_{session_id}/logs.txt", "w"
@@ -216,35 +213,12 @@ def logger(session_id):
         prev.write(str(session_id))
         prev.close()
 
-
-if __name__ == "__main__":
-    if not (os.path.exists(Path("Session_Logs/"))):
-        os.mkdir("Session_Logs")
-    file_path = Path("Session_Logs/previous_session.txt")
-    i = input("Should server read save data (y/n)")
-    if os.path.exists(file_path) and i == "y":
-        print("Reading save data")
-        session_id = 0
-        with open("Session_Logs/previous_session.txt", "r") as prev:
-            session_id = prev.read()
-        with open(
-            f"Session_Logs/Server_Logs_Session_Id_{session_id}/User-data.pkl", "rb"
-        ) as Session_Logs:
-            users = pickle.load(Session_Logs)
-            Session_Logs.close()
-        print("Sucessfully read save data")
-    start = time.time()
-    session_seed = uuid.uuid4().hex
-    random.seed(session_seed)
-    session_id = random.randint(10000000000000000000, 99999999999999999999)
-    i = input("Start server?(y/n)")
-    if i == "y":
-        print(f"Starting server, session id: {session_id}")
-        serve(app, host="0.0.0.0", port=8080)
-        end = time.time()
-        delta = end - start
-        print(
-            "Completed running app.py on port 8080, 80, 443, took %.2f seconds" % delta
-        )
-        logger(session_id)
-    print("Server Session Ended")
+def load():
+    session_id = 0
+    with open("Session_Logs/previous_session.txt", "r") as prev:
+        session_id = prev.read()
+    with open(
+        f"Session_Logs/Server_Logs_Session_Id_{session_id}/User-data.pkl", "rb"
+    ) as Session_Logs:
+        users = pickle.load(Session_Logs)
+        Session_Logs.close()
