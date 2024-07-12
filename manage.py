@@ -15,3 +15,7 @@ if __name__ == '__main__':
         if command == 'exit':
             print('Abort: Ending session')
             break
+        if command == 'help':
+            print('Help')
+            print('exit: Abort')
+            print('run: Run server')
