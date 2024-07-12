@@ -51,21 +51,21 @@ def validate_form(user: User):
 
     for i in users:
         if i.email == user.email:
-            return "bademail"
+            return "Email in use"
         if i.username == user.username:
-            return "badusername"
+            return "Username in use"
     if len(user.password) < 8:
-        return "invalidpass"
+        return "Invalid password(Must be 5 characters)"
     if len(user.username) < 1:
-        return "invalidusername"
+        return "Invalid username"
     if len(user.email) < 1:
-        return "invalidemail"
+        return "Invalid Email"
     if len(user.firstname) < 1:
-        return "badfname"
+        return "Invalid first name"
     if len(user.lastname) < 1:
-        return "invalidlnames"
+        return "Invalid last name"
     if not (pattern.match(user.email)):
-        return "invalidemail"
+        return "Invalid email"
     return "valid"
 
 
@@ -126,8 +126,8 @@ def add_location():
 
 @app.route("/signup", methods=["GET"])
 def signup():
-    if "status" in request.form:
-        pass
+    if request.args.get("status") != None:
+        return render_template("signup.html", e = request.args.get("status"))
     return render_template("signup.html")
 
 
@@ -152,6 +152,8 @@ def newacc():
             fn=request.form["firstname"],
             ln=request.form["lastname"],
         )
+        if validate_form(acc) != 'valid':
+            return redirect(url_for(f"signup?status={validate_form(acc)}"), code=401)
         users.append(acc)
         login_user(acc)
 
@@ -160,6 +162,13 @@ def newacc():
 
     # TODO: think what should be returned
     return redirect(url_for("signup"), code=401)
+
+
+@app.route('/logout', methods = ['GET'])
+@login_required
+def logout():
+    logout_user()
+    return redirect('/')
 
 
 @login_manager.user_loader
