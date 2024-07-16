@@ -1,6 +1,6 @@
 from service.runtime import run, clear_cache
 import sys
-sys.argv
+
 def start():
     catch = input("Server status: Idle (Press S + Enter to start or any other key to abort)")
     if catch == 'S' or catch == 's':
