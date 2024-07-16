@@ -1,7 +1,6 @@
 import uuid
 from werkzeug.security import generate_password_hash
 import requests
-from flask import flash
 from service.classes import User, Coordinate
 from requests.structures import CaseInsensitiveDict
 import os
@@ -35,5 +34,4 @@ def geo_code(address: str):
         )
         return coordinate
     else:
-        flash("Bad address or server")
         return None
