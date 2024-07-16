@@ -164,12 +164,6 @@ def newacc():
     return redirect(url_for("signup"), code=401)
 
 
-@app.route('/logout', methods = ['GET'])
-@login_required
-def logout():
-    logout_user()
-    return redirect('/')
-
 
 @login_manager.user_loader
 def user_loader(user_id):
