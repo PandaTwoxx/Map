@@ -119,7 +119,7 @@ def location_adder():
 
 
 @login_required
-@app.route('/location/<name:str>', methods = ['GET'])
+@app.route('/location/<name>', methods = ['GET'])
 def location(name):
     return render_template('view_location.html')
 
