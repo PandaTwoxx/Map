@@ -14,11 +14,13 @@ class Coordinate:
 class Location:
     name = ""
     location = Coordinate
+    address = ""
     description = ""
 
-    def __init__(self, name, description, location=None) -> None:
+    def __init__(self, name, description, address, location=None) -> None:
         self.name = name
         self.location = location
+        self.address = address
         self.description = description
 
 

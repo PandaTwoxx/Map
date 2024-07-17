@@ -99,14 +99,13 @@ def location_adder():
         and "address" in request.form
     ):
         coordinate = geo_code(request.form["address"])
-        with open('yeet.txt', 'w') as yeet:
-            yeet.write(coordinate)
-            yeet.close()
+
         new_location = None
         if coordinate is not None:
             new_location = Location(
                 name=request.form["name"],
                 description=request.form["description"],
+                address=request.form["address"],
                 location=coordinate,
             )
         else:
@@ -114,8 +113,16 @@ def location_adder():
         for i in users:
             if i == current_user:
                 i.locations.append(new_location)
-    #return redirect(url_for("add_location"))
-    return ''
+        return redirect(url_for("home"))
+    return redirect(url_for("add_location"))
+
+
+
+@login_required
+@app.route('/location/<name:str>', methods = ['GET'])
+def location(name):
+    return render_template('view_location.html')
+
 
 
 @app.route("/add_location", methods=["GET"])
@@ -155,8 +162,8 @@ def newacc():
             fn=request.form["firstname"],
             ln=request.form["lastname"],
         )
-        #if validate_form(acc) != 'valid':
-        #    return redirect(url_for(f"signup?status={validate_form(acc)}"), code=401)
+        if validate_form(acc) != 'valid':
+            return redirect(url_for(f"signup?status={validate_form(acc)}"), code=401)
         users.append(acc)
         login_user(acc)
 

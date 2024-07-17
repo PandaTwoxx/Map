@@ -4,6 +4,7 @@ import requests
 from service.classes import User, Coordinate
 from requests.structures import CaseInsensitiveDict
 import os
+import json
 from dotenv import load_dotenv
 
 
@@ -20,17 +21,20 @@ def keygen(hash=uuid.uuid4().hex):
 
 
 def geo_code(address: str):
-    url = f"https://api.geoapify.com/v1/geocode/search?text={address.replace('+', '%20')}&apiKey={geocoding_api_key}"
+    url = f"https://api.geoapify.com/v1/geocode/search?text={address.replace(' ', '%20')}&apiKey={geocoding_api_key}"
 
     headers = CaseInsensitiveDict()
     headers["Accept"] = "application/json"
 
     resp = requests.get(url, headers=headers)
+    file = json.loads(resp.text)
 
+    
+    first_feature = file['features'][0]
     if resp.status_code == 200:
         coordinate = Coordinate(
-            lon=resp.features[0].properties["lon"],
-            lat=resp.features[0].properties["lat"],
+            lon=first_feature['properties']['lon'],
+            lat=first_feature['properties']['lat'],
         )
         return coordinate
     else:
