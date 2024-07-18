@@ -30,8 +30,8 @@ def geo_code(address: str):
     file = json.loads(resp.text)
 
     
-    first_feature = file['features'][0]
-    if resp.status_code == 200:
+    if resp.status_code == 200 and len(file['features']) > 0:
+        first_feature = file['features'][0]
         coordinate = Coordinate(
             lon=first_feature['properties']['lon'],
             lat=first_feature['properties']['lat'],

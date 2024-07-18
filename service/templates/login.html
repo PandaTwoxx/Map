@@ -26,6 +26,13 @@
               </div>
             </div>
           </nav>
+          {% with message = get_flashed_messages(category_filter=["error"]) %}
+              {% if message %}
+                  <div class="alert alert-danger">
+                      {{message[0]}}
+                  </div>
+              {% endif %}
+          {% endwith %}
           <center>
             <br>
             <br>

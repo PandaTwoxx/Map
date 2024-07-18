@@ -5,7 +5,7 @@ import os.path
 import re
 
 from service.classes import User, Location
-from flask import Flask, render_template, request, redirect, url_for, abort
+from flask import Flask, render_template, request, redirect, url_for, abort, flash
 from waitress import serve
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
@@ -55,7 +55,7 @@ def validate_form(user: User):
         if i.username == user.username:
             return "Username in use"
     if len(user.password) < 8:
-        return "Invalid password(Must be 5 characters)"
+        return "Invalid password(Must be 8 characters)"
     if len(user.username) < 1:
         return "Invalid username"
     if len(user.email) < 1:
@@ -69,7 +69,6 @@ def validate_form(user: User):
     return "valid"
 
 
-# TODO: think about the naming convention
 @app.route("/login_page", methods=["GET"])
 def login_page():
     if "status" in request.form:
@@ -109,10 +108,15 @@ def location_adder():
                 location=coordinate,
             )
         else:
+            flash('Invalid address, try again','error')
             return redirect(url_for("add_location"))
         for i in users:
             if i == current_user:
                 i.locations.append(new_location)
+        flash(
+            'Address added successfully',
+            'success'
+        )
         return redirect(url_for("home"))
     return redirect(url_for("add_location"))
 
@@ -142,8 +146,6 @@ def add_location():
 
 @app.route("/signup", methods=["GET"])
 def signup():
-    if request.args.get("status") != None:
-        return render_template("signup.html", e = request.args.get("status"))
     return render_template("signup.html")
 
 
@@ -160,7 +162,6 @@ def newacc():
         and "firstname" in request.form
         and "lastname" in request.form
     ):
-        # TODO: need to validate data (hint: Regex)
         acc = User(
             un=request.form["username"],
             e=request.form["email"],
@@ -169,15 +170,14 @@ def newacc():
             ln=request.form["lastname"],
         )
         if validate_form(acc) != 'valid':
-            return redirect(url_for(f"signup?status={validate_form(acc)}"), code=401)
+            flash(validate_form(acc), 'error')
+            return redirect(url_for("signup"))
         users.append(acc)
         login_user(acc)
 
-        # TODO: think what should be returned
         return redirect(url_for("home"), code=200)
 
-    # TODO: think what should be returned
-    return redirect(url_for("signup"), code=401)
+    abort(401)
 
 
 
@@ -190,14 +190,12 @@ def user_loader(user_id):
 
 @app.route("/login", methods=["POST"])
 def login():
-    # TODO: how to make this look better?
     if "username" in request.form and "password" in request.form:
         for i in users:
             if i.username == request.form["username"] and check_password_hash(
                 i.password, request.form["password"]
             ):
                 login_user(i)
-                # TODO: think about what we should be returning here
                 return redirect(url_for("home"), code=200)
     return redirect(url_for("login_page", status="unauthorized"), code=401)
 

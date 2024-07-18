@@ -29,11 +29,18 @@
                         <span class="input-group-text" id="basic-addon1">@</span>
                         <input type="text" class="form-control" placeholder="Username" required aria-label="Username" aria-describedby="basic-addon1" name="username">
                     </div>
-                    <input class="form-control me-2" type="search" placeholder="Password" required aria-label="Password" name="password">
+                    <input class="form-control me-2" type="password" placeholder="Password" required aria-label="Password" name="password">
                     <button class="btn btn-outline-success" type="submit">Login</button>
                 </form>
             </div>
           </nav>
+          {% with message = get_flashed_messages(category_filter=["error"]) %}
+              {% if message %}
+                  <div class="alert alert-danger">
+                      {{message[0]}}
+                  </div>
+              {% endif %}
+          {% endwith %}
           <center>
             <br>
             <br>
@@ -56,10 +63,9 @@
                     <input type="email" class="form-control" placeholder="Email" required aria-label="Email" name="email" id="email">
                   </div>
                   <div class="input-group mb-3">
-                    <input type="password" class="form-control" placeholder="Password" required aria-label="Password" name="password" id="password">
+                    <input type="password" class="form-control" placeholder="Password" required aria-label="Password" name="password" id="password" pattern="{8,}">
                   </div>                  
                   <div class="col-12">
-                    <p style="font-family: sans-serif;">{{e}}</p>
                     <button type="submit" class="btn btn-primary">Register</button>
                   </div>
             </form>
