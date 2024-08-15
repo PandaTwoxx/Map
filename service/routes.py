@@ -3,6 +3,7 @@ import os
 import pickle
 import os.path
 import re
+import mysql.connector
 
 from service.classes import User, Location
 from flask import Flask, render_template, request, redirect, url_for, abort, flash
@@ -24,12 +25,41 @@ load_dotenv()
 
 geocoding_api_key = os.getenv("GEO_CODING_API")
 googlemaps_api_key = os.getenv("GOOGLE_MAPS_API")
-
+db_password = os.getenv("DB_PASSWORD")
+db_name = os.getenv("DB_NAME")
+db_host = os.getenv("DB_HOST")
 
 users = [User]
 
 app = Flask(__name__)
+
+# Flask init
 app.config["SECRET_KEY"] = uuid.uuid4().hex
+app.config["MYSQL_HOST"] = "localhost"
+app.config["MYSQL_USER"] = db_host
+app.config["MYSQL_ROOT_PASSWORD"] = db_password
+app.config["MYSQL_DATABASE"] = db_name
+
+mysql = mysql.connector.connect(
+    host=app.config["MYSQL_HOST"],
+    user=app.config["MYSQL_USER"],
+    password=app.config["MYSQL_ROOT_PASSWORD"],
+    database=app.config["MYSQL_DATABASE"],
+    port=3306,
+)
+
+# Create mysql cursor
+cursor = mysql.cursor()
+
+# test the connection
+cursor.execute("SELECT DATABASE()")
+data = cursor.fetchone()
+# if you see the following message in your terminal -- you did everything correct
+print("_________________________SUCCESS!___________________________")
+print("Connected to database:", data[0])
+
+# close the cursor and connection objects
+cursor.close()
 
 login_manager = LoginManager()
 login_manager.init_app(app)
