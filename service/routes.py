@@ -155,12 +155,13 @@ def location_adder():
 @login_required
 @app.route('/locations/<name>', methods = ['GET'])
 def location(name):
-    thing = Location()
-    for i in current_user.locations:
-        if i.name == name:
-            thing = i
-    if thing != None:
-        return render_template('view_location.html', api_key = googlemaps_api_key, i = thing)
+    thing = None
+    if current_user.is_authenticated:
+        for i in current_user.locations:
+            if i.name == name:
+                thing = i
+        if thing is not None:
+            return render_template('view_location.html', api_key = googlemaps_api_key, i = thing)
     return redirect(url_for('home'))
 
 
