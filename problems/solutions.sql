@@ -47,8 +47,8 @@ JOIN takes t2 ON t1.course_id = t2.course_id
                AND t1.semester = t2.semester
                AND t1.year = t2.year
 JOIN student s2 ON t2.ID = s2.ID
-WHERE t1.ID = 'student id :)'
-  AND s2.ID <> 'same student id :)';
+WHERE t1.ID = '12345'
+  AND s2.ID <> '12345';
 
 -- @block 6
 SELECT dept_name, AVG(salary) AS avg_salary
@@ -112,22 +112,19 @@ ORDER BY capacity DESC
 LIMIT 1;
 
 -- @block 14
-SELECT c.course_id, c.title
-FROM course c
-JOIN teaches t ON c.course_id = t.course_id
-                 AND c.sec_id = t.sec_id
-                 AND c.semester = t.semester
-                 AND c.year = t.year
-WHERE t.ID = 'Hi im a professor :)';
+SELECT c.course_id, c.title, i.name
+FROM instructor i
+JOIN teaches t ON i.ID = t.ID
+JOIN course c ON t.course_id = c.course_id
+WHERE i.name = 'Katz';
 
 -- @block 15
-SELECT COUNT(DISTINCT t.ID) AS total_students
+SELECT i.name, COUNT(t.ID) AS total_students
 FROM takes t
 JOIN teaches te ON t.course_id = te.course_id
-                 AND t.sec_id = te.sec_id
-                 AND t.semester = te.semester
-                 AND t.year = te.year
-WHERE te.ID = 'Hi im a professor :)';
+JOIN instructor i ON i.ID = te.ID
+JOIN student s ON s.id = t.ID
+WHERE i.name = 'Katz';
 
 -- @block 16
 SELECT dept_name, COUNT(ID) AS total_students
