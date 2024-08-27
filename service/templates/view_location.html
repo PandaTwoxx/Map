@@ -9,9 +9,9 @@
 <body>
     <gmp-map
         center="{{i.location.lat}},{{i.location.lon}}"
-        zoom="10"
-        map-id="DEMO_MAP_ID"
-        style="height: 400px"
+        zoom="16"
+        map-id="{{i.name}}"
+        style="height: 100%"
     ></gmp-map>
     <script
         src="https://maps.googleapis.com/maps/api/js?key={{api_key}}&loading=async&libraries=maps&v=beta" defer>

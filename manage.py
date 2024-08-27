@@ -1,21 +1,16 @@
 from service.runtime import run, clear_cache
 import sys
 
-def start():
-    catch = input("Server status: Idle (Press S + Enter to start or any other key to abort)")
-    if catch == 'S' or catch == 's':
-        run()
-
 if __name__ == '__main__':
     if 'run' in sys.argv:
         print('Management console: Started Server')
-        start()
+        run()
     print('Management console: Idle')
     while True:
         command = input('Enter command: ')
         if command == 'run':
             print('Management console: Started Server')
-            start()
+            run()
         if command == 'exit':
             print('Abort: Ending session')
             break

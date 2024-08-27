@@ -40,6 +40,8 @@ app.config["MYSQL_USER"] = db_host
 app.config["MYSQL_ROOT_PASSWORD"] = db_password
 app.config["MYSQL_DATABASE"] = db_name
 
+print("Connecting to database.")
+
 mysql = mysql.connector.connect(
     host=app.config["MYSQL_HOST"],
     user=app.config["MYSQL_USER"],
@@ -155,14 +157,20 @@ def location_adder():
 @login_required
 @app.route('/locations/<name>', methods = ['GET'])
 def location(name):
-    thing = None
+    location_object = None # Location
     if current_user.is_authenticated:
         for i in current_user.locations:
+            if i is None:
+                continue
             if i.name == name:
-                thing = i
-        if thing is not None:
-            return render_template('view_location.html', api_key = googlemaps_api_key, i = thing)
-    return redirect(url_for('home'))
+                location_object = i
+                break
+            count += 1
+        if location_object is not None:
+            return render_template('view_location.html', api_key = googlemaps_api_key, i = location_object)
+        flash("Location not found", category="info")
+        return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 
 
