@@ -1,7 +1,9 @@
 import time
 import os
 import threading
+import sys
 import uuid
+
 from waitress import serve
 from service.routes import app
 
@@ -34,6 +36,7 @@ def beginServer():
 
     print("Thread stopped. Ran for %.2f seconds" % delta)
     print("Server Session Ended")
+    sys.exit()
 
 if __name__ == "__main__":
     beginServer()
