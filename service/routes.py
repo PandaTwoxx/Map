@@ -1,13 +1,11 @@
 import uuid
 import os
-import pickle
 import os.path
 import re
 import mysql.connector
 
 from service.classes import User, Location
 from flask import Flask, render_template, request, redirect, url_for, abort, flash
-from waitress import serve
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from flask_login import (
@@ -250,31 +248,3 @@ def home():
 def logout():
     logout_user()
     return redirect("/")
-
-
-def logger(session_id, delta):
-    os.mkdir(f"Session_Logs/Server_Logs_Session_Id_{session_id}")
-    with open(
-        f"Session_Logs/Server_Logs_Session_Id_{session_id}/logs.txt", "w"
-    ) as Session_Logs:
-        Session_Logs.write(f"Session ID: {session_id}\n")
-        Session_Logs.write(f"Time Took: {delta}\n")
-        Session_Logs.close()
-    with open(
-        f"Session_Logs/Server_Logs_Session_Id_{session_id}/User-data.pkl", "wb"
-    ) as Session_Logs:
-        Session_Logs.write(pickle.dumps(users))
-        Session_Logs.close()
-    with open("Session_Logs/previous_session.txt", "w") as prev:
-        prev.write(str(session_id))
-        prev.close()
-
-def load():
-    session_id = 0
-    with open("Session_Logs/previous_session.txt", "r") as prev:
-        session_id = prev.read()
-    with open(
-        f"Session_Logs/Server_Logs_Session_Id_{session_id}/User-data.pkl", "rb"
-    ) as Session_Logs:
-        users = pickle.load(Session_Logs)
-        Session_Logs.close()

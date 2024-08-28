@@ -1,31 +1,39 @@
-import os
 import time
-import random
+import os
+import threading
 import uuid
-
-from pathlib import Path
 from waitress import serve
-from service.routes import app, load, logger
+from service.routes import app
+
+def run_thread():
+    print("ID of sub-thread: {}".format(os.getpid()))
+    print("Sub thread name: {}".format(threading.current_thread().name))
+    serve(app, host='0.0.0.0', port=8080, _quiet=True)
 
 def beginServer():
-    if not (os.path.exists(Path("Session_Logs/"))):
-        os.mkdir("Session_Logs")
-    file_path = Path("Session_Logs/previous_session.txt")
-    i = 'n'#input("Should server read save data (y/n)")
-    if os.path.exists(file_path) and i == "y":
-        print("Reading save data")
-        load()
-        print("Sucessfully read save data")
+    print("ID of main thread: {}".format(os.getpid()))
+    print("Main thread name: {}".format(threading.current_thread().name))
+
     start = time.time()
-    session_seed = uuid.uuid4().hex
-    random.seed(session_seed)
-    session_id = random.randint(10000000000000000000, 99999999999999999999)
-    print(f"session id: {session_id}")
-    serve(app, host="0.0.0.0", port=8080)
+    print('Creating new task')
+
+    t1 = threading.Thread(target=run_thread, name=str(uuid.uuid4()), daemon=True)
+    t1.start()
+
+    print("Task running")
+    while True:
+        if input("Enter \"Stop\" to terminate: ") == "Stop":
+            break
+
+    print("Stopping server...")
+    # No need to join since the thread is a daemon
+    print("Task ended")
+
     end = time.time()
     delta = end - start
-    print(
-        "Completed running app.py on port 8080, 80, 443, took %.2f seconds" % delta
-    )
-    logger(session_id, delta)
+
+    print("Thread stopped. Ran for %.2f seconds" % delta)
     print("Server Session Ended")
+
+if __name__ == "__main__":
+    beginServer()
