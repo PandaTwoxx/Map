@@ -168,7 +168,7 @@ def location(name):
             return render_template('view_location.html', api_key = googlemaps_api_key, i = location_object)
         flash("Location not found", category="info")
         return redirect(url_for('home'))
-    return redirect(url_for('login'))
+    return redirect(url_for('login_page'))
 
 
 

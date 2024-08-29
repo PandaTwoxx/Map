@@ -24,7 +24,7 @@ def beginServer():
 
     print("Task running")
     while True:
-        if input("Enter \"Stop\" to terminate: ") == "Stop":
+        if input("Enter \"Stop\" to terminate: ").lower() == "stop":
             break
 
     print("Stopping server...")
