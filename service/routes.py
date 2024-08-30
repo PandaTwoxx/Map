@@ -27,7 +27,6 @@ db_password = os.getenv("DB_PASSWORD")
 db_name = os.getenv("DB_NAME")
 db_host = os.getenv("DB_HOST")
 
-users = [User]
 
 app = Flask(__name__)
 
@@ -79,11 +78,6 @@ def validate_form(user: User):
         file.close()
     pattern = re.compile(email_regex)
 
-    for i in users:
-        if i.email == user.email:
-            return "Email in use"
-        if i.username == user.username:
-            return "Username in use"
     if len(user.password) < 8:
         return "Invalid password(Must be 8 characters)"
     if len(user.username) < 1:
@@ -189,6 +183,7 @@ def signup():
 # POST users/
 @app.route("/users", methods=["POST"])
 def newacc():
+    cursor = mysql.cursor()
     """
     This endpoint is creating new User account.
     """
@@ -209,8 +204,29 @@ def newacc():
         if validate_form(acc) != 'valid':
             flash(validate_form(acc), 'error')
             return redirect(url_for("signup"))
-        users.append(acc)
+        
+        query = "SELECT * FROM users WHERE username = %s"
+        cursor.execute(query, (acc.username, ))
+        data = cursor.fetchone()
+        if data is not None:
+            flash("Username '{}' already exsists".format(acc.username), 'error')
+            return redirect(url_for("signup"))
+        
+        query = "SELECT * FROM users WHERE email = %s"
+        cursor.execute(query, (acc.email, ))
+        data = cursor.fetchone()
+        if data is not None:
+            flash("Email '{}' already exsists".format(acc.email), 'error')
+            return redirect(url_for("signup"))
+        
+        insert_query = "INSERT INTO users(firstname,lastname,username,PASSWORD,email) VALUES(%s,%s,%s,%s,%s)"
+        cursor.execute(insert_query, (acc.firstname,acc.lastname,acc.username,acc.password,acc.email, ))
+        mysql.commit()
+        cursor.execute("SELECT id FROM users WHERE username = %s, email = %s", (acc.username, acc.email, ))
+        cursor.close()
         login_user(acc)
+
+        flash('User registered successfully', category="success")
 
         return redirect(url_for("home"), code=200)
 
@@ -220,9 +236,21 @@ def newacc():
 
 @login_manager.user_loader
 def user_loader(user_id):
-    for i in users:
-        if i.id == user_id:
-            return i
+    query = "SELECT * FROM users WHERE id = %s"
+    cursor = mysql.cursor()
+    cursor.execute(query, (user_id, ))
+    data = cursor.fetchone()
+    cursor.close()
+
+    user = User(
+        un = data['username'],
+        e = data['email'],
+        p = data['password'],
+        fn = data['firstname'],
+        ln = data['lastname']
+    )
+
+    return user
 
 
 @app.route("/login", methods=["POST"])

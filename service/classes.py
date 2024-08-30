@@ -39,7 +39,7 @@ class User(UserMixin):
         self.password = p
         self.firstname = fn
         self.lastname = ln
-        self.locations = [location]
+        self.locations = [Location]
         self.id = uuid.uuid4().hex
 
     def get_id(self):
