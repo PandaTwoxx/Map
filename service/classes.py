@@ -2,7 +2,7 @@ import uuid
 from flask_login import UserMixin
 
 
-class Coordinate:
+class LocationDetails:
     lon = ""
     lat = ""
 
@@ -13,7 +13,7 @@ class Coordinate:
 
 class Location:
     name = ""
-    location = Coordinate
+    location = LocationDetails
     address = ""
     description = ""
 

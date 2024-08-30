@@ -13,29 +13,28 @@ CREATE TABLE users (
     lastname varchar(255) NOT NULL,
     username varchar(255) NOT NULL,
     PASSWORD varchar(255) NOT NULL,
-    email varchar(255),
-);
-
-
-CREATE TABLE locations (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    -- note, this can be NULL
-    name varchar(255),
-    -- note, this can be NULL
-    description varchar(255),
-    location_details_id INT NOT NULL,
-    FOREIGN KEY (location_details_id) REFERENCES location_details(id) ON DELETE CASCADE
+    email varchar(255) NOT NULL,
+    CONSTRAINT unique_username UNIQUE(username),
+    CONSTRAINT unique_email UNIQUE(email)
 );
 
 
 CREATE TABLE location_details (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    -- results[0]['formatted']
-    address varchar(255) NOT NULL,
     -- results[0]['lon']
     longitude DECIMAL(10, 8) NOT NULL,
     -- results[0]['lat']
-    latitude DECIMAL(10, 8) NOT NULL,
+    latitude DECIMAL(10, 8) NOT NULL
+);
+
+
+CREATE TABLE locations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    address varchar(255) NOT NULL,
+    name varchar(255) NOT NULL,
+    description varchar(255) NOT NULL,
+    location_details_id INT NOT NULL,
+    FOREIGN KEY (location_details_id) REFERENCES location_details(id) ON DELETE CASCADE
 );
 
 

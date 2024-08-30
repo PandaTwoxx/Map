@@ -1,7 +1,7 @@
 import uuid
 from werkzeug.security import generate_password_hash
 import requests
-from service.classes import User, Coordinate
+from service.classes import User, LocationDetails
 from requests.structures import CaseInsensitiveDict
 import os
 import json
@@ -32,7 +32,7 @@ def geo_code(address: str):
     
     if resp.status_code == 200 and len(file['features']) > 0:
         first_feature = file['features'][0]
-        coordinate = Coordinate(
+        coordinate = LocationDetails(
             lon=first_feature['properties']['lon'],
             lat=first_feature['properties']['lat'],
         )
