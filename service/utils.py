@@ -13,13 +13,6 @@ load_dotenv()
 geocoding_api_key = os.getenv("GEO_CODING_API")
 
 
-def keygen(hash=uuid.uuid4().hex):
-    """
-    Generates a key for the User to use
-    """
-    return generate_password_hash(hash)
-
-
 def geo_code(address: str):
     url = f"https://api.geoapify.com/v1/geocode/search?text={address.replace(' ', '%20')}&apiKey={geocoding_api_key}"
 
