@@ -16,7 +16,7 @@ from flask_login import (
     logout_user,
 )
 from http import HTTPStatus
-from service.utils import keygen, geo_code
+from service.utils import geo_code
 
 
 load_dotenv()
@@ -201,7 +201,7 @@ def newacc():
             fn=request.form["firstname"],
             ln=request.form["lastname"],
         )
-        if validate_form(acc) != 'valid':
+        if validate_form(acc) != "valid":
             flash(validate_form(acc), 'error')
             return redirect(url_for("signup"))
         
@@ -219,10 +219,12 @@ def newacc():
             flash("Email '{}' already exsists".format(acc.email), 'error')
             return redirect(url_for("signup"))
         
-        insert_query = "INSERT INTO users(firstname,lastname,username,PASSWORD,email) VALUES(%s,%s,%s,%s,%s)"
+        insert_query = "INSERT INTO users(firstname,lastname,username,PASSWORD,email) VALUES(%s,%s,%s,%s,%s);"
         cursor.execute(insert_query, (acc.firstname,acc.lastname,acc.username,acc.password,acc.email, ))
         mysql.commit()
-        cursor.execute("SELECT id FROM users WHERE username = %s, email = %s", (acc.username, acc.email, ))
+        cursor.execute("SELECT id FROM users WHERE username = %s AND email = %s;", (acc.username, acc.email, ))
+        data = cursor.fetchone()
+        acc.id = data[0]
         cursor.close()
         login_user(acc)
 
@@ -236,19 +238,24 @@ def newacc():
 
 @login_manager.user_loader
 def user_loader(user_id):
-    query = "SELECT * FROM users WHERE id = %s"
+    query = "SELECT * FROM users WHERE id = %s;"
     cursor = mysql.cursor()
     cursor.execute(query, (user_id, ))
     data = cursor.fetchone()
-    cursor.close()
 
     user = User(
-        un = data['username'],
-        e = data['email'],
-        p = data['password'],
-        fn = data['firstname'],
-        ln = data['lastname']
-    )
+                    un = data[3],
+                    e = data[5],
+                    p = data[4],
+                    fn = data[1],
+                    ln = data[2]
+                )
+    
+
+    cursor.execute('SELECT id FROM users WHERE username = %s AND email = %s;', (user.username,user.email, ))
+    data = cursor.fetchone()
+    user.id = data[0]
+    cursor.close()
 
     return user
 
@@ -256,13 +263,22 @@ def user_loader(user_id):
 @app.route("/login", methods=["POST"])
 def login():
     if "username" in request.form and "password" in request.form:
-        for i in users:
-            if i.username == request.form["username"] and check_password_hash(
-                i.password, request.form["password"]
-            ):
-                login_user(i)
-                return redirect(url_for("home"), code=200)
-    return redirect(url_for("login_page", status="unauthorized"), code=401)
+        cursor = mysql.cursor()
+        cursor.execute("SELECT * FROM users WHERE username = %s;", (request.form['username'], ))
+        data = cursor.fetchone()
+        if check_password_hash(data[4],request.form['password']):
+            user = User(
+                    un = data[3],
+                    e = data[5],
+                    p = data[4],
+                    fn = data[1],
+                    ln = data[2]
+                )
+            user.id = str(data[0])
+            login_user(user)
+            return redirect(url_for("home"), code=200)
+    flash('Username or password incorrect', category='error')
+    return redirect(url_for("login_page"), code=401)
 
 
 @app.route("/home", methods=["GET"])
@@ -270,9 +286,8 @@ def login():
 def home():
     return render_template("home.html")
 
-
-@app.route("/logout")
+@app.route("/logout", methods=["GET"])
 @login_required
 def logout():
     logout_user()
-    return redirect("/")
+    return redirect('/')
