@@ -40,7 +40,6 @@ class User(UserMixin):
         self.firstname = fn
         self.lastname = ln
         self.locations = [Location]
-        self.id = uuid.uuid4().hex
 
     def get_id(self):
         return self.id
