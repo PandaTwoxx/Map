@@ -121,22 +121,42 @@ def location_adder():
         and "description" in request.form
         and "address" in request.form
     ):
-        coordinate = geo_code(request.form["address"])
-
+        location_details = geo_code(request.form["address"])
+        cursor = mysql.cursor()
         new_location = None
-        if coordinate is not None:
+        if location_details is not None:
             new_location = Location(
                 name=request.form["name"],
                 description=request.form["description"],
-                address=request.form["address"],
-                location=coordinate,
+                address=location_details['formatted_address'],
+                location=location_details['coordinate'],
             )
         else:
             flash('Invalid address, try again','error')
             return redirect(url_for("add_location"))
-        for i in users:
-            if i == current_user:
-                i.locations.append(new_location)
+        user_id = current_user.id
+        # TODO: Avoid duplicates
+        # Populate location_details
+        query = 'INSERT INTO location_details(coordinate) VALUES (ST_GeomFromText(\'POINT(%s %s)\'));'
+        cursor.execute(query, (new_location.location.lon, new_location.location.lat, ))
+
+        query = 'SELECT id FROM location_details WHERE coordinate = ST_GeomFromText(\'POINT(%s %s)\');'
+        cursor.execute(query, (new_location.location.lon, new_location.location.lat, ))
+        location_details_id = cursor.fetchone()
+        # Populate locations
+        query = 'INSERT INTO locations(address,name,description,location_details_id) VALUES (%s,%s,%s,%s);'
+        cursor.execute(query,(new_location.address, new_location.name, new_location.description, location_details_id[0], ))
+        query = 'SELECT id FROM locations WHERE address = %s AND name = %s AND description = %s AND location_details_id = %s;'
+        cursor.execute(query,(new_location.address, new_location.name, new_location.description, location_details_id[0], ))
+        location_id = cursor.fetchone()
+        # Populate user_locations
+        query = 'INSERT INTO users_locations(user_id,location_id) VALUES (%s,%s);'
+        cursor.execute(query,(user_id, location_id[0], ))
+
+        # Commit and close cursor
+        mysql.commit()
+        cursor.close()
+
         flash(
             'Address added successfully',
             'success'
@@ -266,6 +286,9 @@ def login():
         cursor = mysql.cursor()
         cursor.execute("SELECT * FROM users WHERE username = %s;", (request.form['username'], ))
         data = cursor.fetchone()
+        if data is None:
+            flash('Username or password incorrect', category='error')
+            return redirect(url_for("login_page"), code=401)
         if check_password_hash(data[4],request.form['password']):
             user = User(
                     un = data[3],

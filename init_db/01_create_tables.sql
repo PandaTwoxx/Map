@@ -21,10 +21,7 @@ CREATE TABLE users (
 
 CREATE TABLE location_details (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    -- results[0]['lon']
-    longitude DECIMAL(10, 8) NOT NULL,
-    -- results[0]['lat']
-    latitude DECIMAL(10, 8) NOT NULL
+    coordinate POINT NOT NULL
 );
 
 

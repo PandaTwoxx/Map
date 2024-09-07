@@ -26,9 +26,10 @@ def geo_code(address: str):
     if resp.status_code == 200 and len(file['features']) > 0:
         first_feature = file['features'][0]
         coordinate = LocationDetails(
-            lon=first_feature['properties']['lon'],
-            lat=first_feature['properties']['lat'],
+            lon=round(first_feature['properties']['lon'],8),
+            lat=round(first_feature['properties']['lat'],8),
         )
-        return coordinate
+        formatted = first_feature['properties']['formatted']
+        return {"coordinate":coordinate, "formatted_address":formatted}
     else:
         return None
