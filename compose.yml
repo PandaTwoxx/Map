@@ -5,9 +5,9 @@ services:
     image: mysql:latest
     container_name: test_docker_compose
     environment:
-      MYSQL_ROOT_PASSWORD: pasword123
+      MYSQL_ROOT_PASSWORD: placeholder
       MYSQL_DATABASE: test_docker_compose
-      MYSQL_HOST: localhost
+      MYSQL_HOST: placeholder
     volumes:
       - db_data:/var/lib/mysql
       - ./init_db:/docker-entrypoint-initdb.d
