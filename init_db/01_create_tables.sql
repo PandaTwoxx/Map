@@ -1,10 +1,10 @@
-DROP DATABASE IF EXISTS test_docker_compose;
+DROP DATABASE IF EXISTS map;
 
 
-CREATE DATABASE test_docker_compose;
+CREATE DATABASE map;
 
 
-USE test_docker_compose;
+USE map;
 
 
 CREATE TABLE users (

@@ -349,3 +349,30 @@ def home():
 def logout():
     logout_user()
     return redirect('/'),302
+
+
+@app.route('/delete_location/<name>')
+@login_required
+def delete_location(name):
+    cursor = mysql.cursor()
+    cursor.reset()
+    query = 'SELECT * FROM users_locations WHERE user_id = %s'
+    cursor.execute(query,(current_user.id,))
+    data = cursor.fetchall()
+    for i in data:
+        # DELETE instance of location
+        query = 'SELECT * FROM locations WHERE id = %s;'
+        cursor.execute(query, (i[1],))
+        location = cursor.fetchone()
+        cursor.reset()
+        query = 'DELETE FROM location_details WHERE id = %s;'
+        cursor.execute(query,(location[4],))
+        query = 'DELETE FROM locations WHERE id = %s;'
+        cursor.execute(query,(location[0],))
+        cursor.reset()
+    # Commit and close cursor
+    mysql.commit()
+    cursor.close()
+    # Return redirect response
+    flash('Location deleted', category='info')
+    return redirect('/home'),302

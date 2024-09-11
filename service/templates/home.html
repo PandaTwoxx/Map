@@ -23,6 +23,9 @@
                     <a class="nav-link" href="/logout">Logout</a>
                   </div>
               </div>
+              <span class="navbar-text">
+                {{current_user.name}}
+              </span> 
             </div>
           </nav>
           {% with message = get_flashed_messages(category_filter=["success"]) %}
@@ -49,7 +52,7 @@
           {% set count = namespace(value=0) %}
           {% for i in current_user.locations %}
             {% if count.value != 0 %}
-              <div class="card" style="width: 18rem; padding:5%;">
+              <div class="card" style="width: 18rem; border:transparent 5% solid;">
                 <div class="card-body">
                   <h5 class="card-title">{{i.name}}</h5>
                   <h6 class="card-subtitle mb-2 text-body-secondary">{{i.address}}</h6>

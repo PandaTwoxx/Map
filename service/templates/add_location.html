@@ -23,6 +23,9 @@
                     <a class="nav-link" href="/logout">Logout</a>
                   </div>
               </div>
+              <span class="navbar-text">
+                {{current_user.name}}
+              </span>        
             </div>
           </nav>
           {% with message = get_flashed_messages(category_filter=["success"]) %}

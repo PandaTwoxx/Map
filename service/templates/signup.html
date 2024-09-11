@@ -25,13 +25,13 @@
                 </ul>
               </div>
                 <form class="d-flex" method="post" action="/login">
-                    <div class="input-group">
-                        <span class="input-group-text" id="basic-addon1">@</span>
-                        <input type="text" class="form-control" placeholder="Username" required aria-label="Username" aria-describedby="basic-addon1" name="username">
-                    </div>
-                    <input class="form-control me-2" type="password" placeholder="Password" required aria-label="Password" name="password">
-                    <button class="btn btn-outline-success" type="submit">Login</button>
-                </form>
+                  <div class="input-group">
+                      <span class="input-group-text" id="basic-addon1">@</span>
+                      <input type="text" class="form-control" placeholder="Username" required aria-label="Username" aria-describedby="basic-addon1" id="username" name="username">
+                  </div>
+                  <input class="form-control me-2" type="password" placeholder="Password" required aria-label="Password" id="password" name="password">
+                  <button class="btn btn-outline-success" type="submit">Login</button>
+              </form>
             </div>
           </nav>
           {% with message = get_flashed_messages(category_filter=["error"]) %}
