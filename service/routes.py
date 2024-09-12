@@ -362,13 +362,15 @@ def delete_location(name):
     for i in data:
         # DELETE instance of location
         query = 'SELECT * FROM locations WHERE id = %s;'
-        cursor.execute(query, (i[1],))
+        cursor.execute(query, (i[2],))
         location = cursor.fetchone()
         cursor.reset()
         query = 'DELETE FROM location_details WHERE id = %s;'
         cursor.execute(query,(location[4],))
         query = 'DELETE FROM locations WHERE id = %s;'
         cursor.execute(query,(location[0],))
+        query = 'DELETE FROM users_locations WHERE user_id = %s;'
+        cursor.execute(query,(current_user.id,))
         cursor.reset()
     # Commit and close cursor
     mysql.commit()
