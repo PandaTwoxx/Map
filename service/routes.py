@@ -121,7 +121,7 @@ def location_adder():
         and "address" in request.form
     ):
         location_details = geo_code(request.form["address"])
-        cursor = mysql.cursor() 
+        cursor = mysql.cursor()
         new_location = None
         if location_details is not None:
             new_location = Location(
@@ -139,6 +139,22 @@ def location_adder():
         # Add changes to current_user
         current_user.locations.append(new_location)
 
+
+        # Check if location already exsists
+        query = 'SELECT * FROM locations WHERE name = %s AND description = %s AND address = %s;'
+        cursor.execute(query, (new_location.name, new_location.description, new_location.address, ))
+        data = cursor.fetchone()
+        if data is not None:
+            location_details_id = data[4]
+            location_id = data[0]
+            query = 'SELECT * FROM location_details WHERE id = %s;'
+            cursor.execute(query, (location_details_id, ))
+            data = cursor.fetchone()
+            if data is not None:
+                query = 'INSERT INTO users_locations(user_id,location_id) VALUES (%s,%s);'
+                cursor.execute(query,(current_user.id, location_id, ))
+                flash('Address added successfully', 'success')
+                return redirect(url_for("home"))
         # Insert into location_details
         cursor.reset()
         query = 'INSERT INTO location_details(coordinate) VALUES (ST_GeomFromText(\'POINT(%s %s)\'));'
@@ -166,7 +182,7 @@ def location_adder():
         query = 'INSERT INTO users_locations(user_id, location_id) VALUES (%s, %s);'
         cursor.execute(query, (user_id, location_id[0]))
 
-        # Commit the transaction and close the cursor
+        # Commit the change and close the cursor
         mysql.commit()
         cursor.close()
 
@@ -205,7 +221,7 @@ def add_location():
     """
     This endpoint is for adding a location
     """
-    return render_template("add_location.html")
+    return render_template("add_location.html", current_user = current_user)
 
 
 @app.route("/signup", methods=["GET"])
@@ -342,7 +358,7 @@ def login():
 @app.route("/home", methods=["GET"])
 @login_required
 def home():
-    return render_template("home.html")
+    return render_template("home.html", current_user = current_user)
 
 @app.route("/logout", methods=["GET"])
 @login_required
@@ -361,16 +377,14 @@ def delete_location(name):
     data = cursor.fetchall()
     for i in data:
         # DELETE instance of location
-        query = 'SELECT * FROM locations WHERE id = %s;'
-        cursor.execute(query, (i[2],))
+        query = 'SELECT * FROM locations WHERE id = %s AND name = %s;'
+        cursor.execute(query, (i[2], name, ))
         location = cursor.fetchone()
+        if location is None:
+            continue
         cursor.reset()
-        query = 'DELETE FROM location_details WHERE id = %s;'
-        cursor.execute(query,(location[4],))
-        query = 'DELETE FROM locations WHERE id = %s;'
-        cursor.execute(query,(location[0],))
-        query = 'DELETE FROM users_locations WHERE user_id = %s;'
-        cursor.execute(query,(current_user.id,))
+        query = 'DELETE FROM users_locations WHERE user_id = %s AND location_id = %s;'
+        cursor.execute(query,(current_user.id, location[0], ))
         cursor.reset()
     # Commit and close cursor
     mysql.commit()
