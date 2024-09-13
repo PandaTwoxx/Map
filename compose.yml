@@ -3,16 +3,20 @@ version: '3.8'
 services:
   db:
     image: mysql:latest
-    container_name: test_docker_compose
+    container_name: mysql_database
     environment:
       MYSQL_ROOT_PASSWORD: placeholder
-      MYSQL_DATABASE: test_docker_compose
-      MYSQL_HOST: placeholder
+      MYSQL_DATABASE: map
+      MYSQL_HOST: localhost
     volumes:
       - db_data:/var/lib/mysql
       - ./init_db:/docker-entrypoint-initdb.d
     ports:
       - "3306:3306"
+  web:
+    build: .
+    ports:
+      - "8080:8080"
 
 volumes:
   db_data:
