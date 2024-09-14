@@ -19,7 +19,8 @@ def geo_code(address: str):
     Returns:
         dict: the format
     """
-    url = f"https://api.geoapify.com/v1/geocode/search?text={address.replace(' ', '%20')}&apiKey={geocoding_api_key}"
+    url = f"https://api.geoapify.com/v1/geocode/search?text={address.replace(' ', '%20')}\
+    &apiKey={geocoding_api_key}"
 
     headers = CaseInsensitiveDict()
     headers["Accept"] = "application/json"
@@ -27,7 +28,7 @@ def geo_code(address: str):
     resp = requests.get(url, headers=headers, timeout=10)
     file = json.loads(resp.text)
 
-    
+
     if resp.status_code == 200 and len(file['features']) > 0:
         first_feature = file['features'][0]
         coordinate = LocationDetails(
