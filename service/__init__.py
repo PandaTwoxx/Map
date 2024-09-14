@@ -1,3 +1,4 @@
+"""Modules/Libraries"""
 import time
 import os
 import threading
@@ -8,13 +9,17 @@ from waitress import serve
 from service.routes import app
 
 def run_thread():
-    print("ID of sub-thread: {}".format(os.getpid()))
-    print("Sub thread name: {}".format(threading.current_thread().name))
+    """Starts thread
+    """
+    print(f"ID of sub-thread: {os.getpid()}")
+    print(f"Sub thread name: {threading.current_thread().name}")
     serve(app, host='0.0.0.0', port=8080, _quiet=True)
 
-def beginServer():
-    print("ID of main thread: {}".format(os.getpid()))
-    print("Main thread name: {}".format(threading.current_thread().name))
+def begin_server():
+    """Runs server initilization
+    """
+    print(f"ID of main thread: {os.getpid()}")
+    print(f"Main thread name: {threading.current_thread().name}")
 
     start = time.time()
     print('Creating new task')
@@ -34,9 +39,6 @@ def beginServer():
     end = time.time()
     delta = end - start
 
-    print("Thread stopped. Ran for %.2f seconds" % delta)
+    print(f"Thread stopped. Ran for {delta} seconds")
     print("Server Session Ended")
     sys.exit()
-
-if __name__ == "__main__":
-    beginServer()

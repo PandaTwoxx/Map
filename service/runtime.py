@@ -1,10 +1,10 @@
+"""Server starter"""
 from service.__init__ import beginServer
-import shutil
-import os
-
 
 
 def run():
+    """starts server
+    """
     # Begin the server here
     print('Starting server')
     beginServer()

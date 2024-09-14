@@ -1,8 +1,10 @@
-import uuid
+"""UserMixin module"""
 from flask_login import UserMixin
 
 
 class LocationDetails:
+    """holds lon and lat variables
+    """
     lon = ""
     lat = ""
 
@@ -12,6 +14,8 @@ class LocationDetails:
 
 
 class Location:
+    """Holds Location data
+    """
     name = ""
     location = LocationDetails
     address = ""
@@ -25,6 +29,7 @@ class Location:
 
 
 class User(UserMixin):
+    """User object"""
     id = ""
     email = ""
     username = ""
@@ -33,7 +38,7 @@ class User(UserMixin):
     lastname = ""
     locations = [Location]
 
-    def __init__(self, un, e, p, fn, ln, location: Location = None) -> None:
+    def __init__(self, un, e, p, fn, ln) -> None:
         self.username = un
         self.email = e
         self.password = p
