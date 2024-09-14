@@ -17,6 +17,11 @@ services:
     build: .
     ports:
       - "8080:8080"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /code
     depends_on:
       - db
 
