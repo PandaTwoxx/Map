@@ -1,5 +1,7 @@
-from service.runtime import run
+"""Used for reading args"""
 import sys
+
+from service.runtime import run
 
 if __name__ == '__main__':
     if 'run' in sys.argv:

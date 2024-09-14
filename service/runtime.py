@@ -1,5 +1,5 @@
 """Server starter"""
-from service.__init__ import beginServer
+from service.__init__ import begin_server
 
 
 def run():
@@ -7,4 +7,4 @@ def run():
     """
     # Begin the server here
     print('Starting server')
-    beginServer()
+    begin_server()
