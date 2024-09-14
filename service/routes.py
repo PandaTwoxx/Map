@@ -1,10 +1,11 @@
+"""Modules and libraries"""
 import uuid
 import os
 import os.path
 import re
+from http import HTTPStatus
 import mysql.connector
 
-from service.classes import User, Location, LocationDetails
 from flask import Flask, render_template, request, redirect, url_for, abort, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
@@ -15,7 +16,7 @@ from flask_login import (
     current_user,
     logout_user,
 )
-from http import HTTPStatus
+from service.classes import User, Location, LocationDetails
 from service.utils import geo_code
 
 
@@ -47,18 +48,23 @@ mysql = mysql.connector.connect(
     port=3306,
 )
 
-# Create mysql cursor
-cursor = mysql.cursor()
+def test_connection():
+    """Tests connection to database
+    """
+    # Create mysql cursor
+    cursor = mysql.cursor()
 
-# test the connection
-cursor.execute("SELECT DATABASE()")
-data = cursor.fetchone()
-# if you see the following message in your terminal -- you did everything correct
-print("_________________________SUCCESS!___________________________")
-print("Connected to database:", data[0])
+    # test the connection
+    cursor.execute("SELECT DATABASE()")
+    data = cursor.fetchone()
+    # if you see the following message in your terminal -- you did everything correct
+    print("_________________________SUCCESS!___________________________")
+    print("Connected to database:", data[0])
 
-# close the cursor and connection objects
-cursor.close()
+    # close the cursor and connection objects
+    cursor.close()
+
+test_connection()
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -72,8 +78,16 @@ login_manager.needs_refresh_message_category = "info"
 
 
 def validate_form(user: User):
+    """Validates user
+
+    Args:
+        user (User): User type
+
+    Returns:
+       str: validation message
+    """
     email_regex = ""
-    with open("regex.txt", "r") as file:
+    with open("regex.txt", "r", encoding="utf8") as file:
         email_regex = file.readline()
         file.close()
     pattern = re.compile(email_regex)
@@ -88,13 +102,18 @@ def validate_form(user: User):
         return "Invalid first name"
     if len(user.lastname) < 1:
         return "Invalid last name"
-    if not (pattern.match(user.email)):
+    if not pattern.match(user.email):
         return "Invalid email"
     return "valid"
 
 
 @app.route("/login_page", methods=["GET"])
 def login_page():
+    """The login page
+
+    Returns:
+        str: rendered template
+    """
     if "status" in request.form:
         return render_template("login.html", e="Username or password incorrect")
     return render_template("login.html")
@@ -102,9 +121,14 @@ def login_page():
 
 @login_manager.unauthorized_handler
 def unauthorized():
+    """Endpoint for unauthorized 
+    Returns:
+        Response: redirects to login page, http code 302
+        NoReturn: aborts with unauthorized status
+    """
     if request.blueprint == "api":
         abort(HTTPStatus.UNAUTHORIZED)
-    return redirect(url_for("login_page"))
+    return redirect(url_for("login_page")),302
 
 
 @app.route("/", methods=["GET"])
@@ -115,6 +139,12 @@ def index():
 @app.route("/location_adder", methods=["POST", "GET"])
 @login_required
 def location_adder():
+    """Adds location to database
+
+    Returns:
+        Response: redirects to /home if location is valid
+        Response: redirects to /add_location if location is not valid and flashes message
+    """
     if (
         "name" in request.form
         and "description" in request.form
@@ -133,8 +163,20 @@ def location_adder():
         else:
             flash('Invalid address, try again', 'error')
             return redirect(url_for("add_location"))
-        
+
         user_id = current_user.id
+
+        # Check if location name already exsists in users location data
+        query = 'SELECT * FROM users_locations WHERE user_id = %s;'
+        cursor.execute(query, (current_user.id,))
+        all_locations = cursor.fetchall()
+        for i in all_locations:
+            query = 'SELECT * FROM locations WHERE id = %s AND name = %s;'
+            cursor.execute(query, (i[2], request.form['name'], ))
+            safety_check = cursor.fetchone()
+            if safety_check is not None:
+                flash('Location name is in use', category='error')
+                return redirect('/add_location'),302
 
         # Add changes to current_user
         current_user.locations.append(new_location)
@@ -157,24 +199,38 @@ def location_adder():
                 return redirect(url_for("home"))
         # Insert into location_details
         cursor.reset()
-        query = 'INSERT INTO location_details(coordinate) VALUES (ST_GeomFromText(\'POINT(%s %s)\'));'
+        query = 'INSERT INTO location_details(coordinate)\
+        VALUES (ST_GeomFromText(\'POINT(%s %s)\'));'
         cursor.execute(query, (new_location.location.lon, new_location.location.lat))
 
         # Fetch the location_details ID
         cursor.reset()
-        query = 'SELECT id FROM location_details WHERE coordinate = ST_GeomFromText(\'POINT(%s %s)\');'
+        query = 'SELECT id FROM location_details WHERE\
+        coordinate = ST_GeomFromText(\'POINT(%s %s)\');'
         cursor.execute(query, (new_location.location.lon, new_location.location.lat))
         location_details_id = cursor.fetchone()
 
         # Insert into locations
         cursor.reset()
-        query = 'INSERT INTO locations(address, name, description, location_details_id) VALUES (%s, %s, %s, %s);'
-        cursor.execute(query, (new_location.address, new_location.name, new_location.description, location_details_id[0]))
+        query = 'INSERT INTO locations(address, name, description\
+        , location_details_id) VALUES (%s, %s, %s, %s);'
+        cursor.execute(query, (new_location.address,
+                               new_location.name,
+                               new_location.description,
+                               location_details_id[0]
+                               )
+                            )
 
         # Fetch the location ID
         cursor.reset()
-        query = 'SELECT id FROM locations WHERE address = %s AND name = %s AND description = %s AND location_details_id = %s;'
-        cursor.execute(query, (new_location.address, new_location.name, new_location.description, location_details_id[0]))
+        query = 'SELECT id FROM locations WHERE address = %s AND name = %s\
+        AND description = %s AND location_details_id = %s;'
+        cursor.execute(query, (new_location.address,
+                               new_location.name,
+                               new_location.description,
+                               location_details_id[0]
+                               )
+                            )
         location_id = cursor.fetchone()
 
         # Insert into users_locations
@@ -197,6 +253,14 @@ def location_adder():
 @login_required
 @app.route('/locations/<name>', methods = ['GET'])
 def location(name):
+    """Displays location
+
+    Args:
+        name (str): The name of the location
+
+    Returns:
+        str: Displays location
+    """
     location_object = None # Location
     count = 0
     if current_user.is_authenticated:
@@ -208,7 +272,10 @@ def location(name):
                 break
             count += 1
         if location_object is not None:
-            return render_template('view_location.html', api_key = googlemaps_api_key, i = location_object)
+            return render_template('view_location.html',
+                                   api_key = googlemaps_api_key,
+                                   i = location_object
+                                   )
         flash("Location not found", category="info")
         return redirect(url_for('home')), 302
     return redirect(url_for('login_page')), 302
@@ -226,16 +293,23 @@ def add_location():
 
 @app.route("/signup", methods=["GET"])
 def signup():
+    """The signup page endpoint
+
+    Returns:
+        str: The signup page in html
+    """
     return render_template("signup.html")
 
 
 # POST users/
 @app.route("/users", methods=["POST"])
 def newacc():
+    """Endpoint for creating a new user
+
+    Returns:
+        Response: Redirects to /home or /signup if error
+    """
     cursor = mysql.cursor()
-    """
-    This endpoint is creating new User account.
-    """
     if (
         "email" in request.form
         and "username" in request.form
@@ -253,25 +327,33 @@ def newacc():
         if validate_form(acc) != "valid":
             flash(validate_form(acc), 'error')
             return redirect(url_for("signup"))
-        
+
         query = "SELECT * FROM users WHERE username = %s"
         cursor.execute(query, (acc.username, ))
         data = cursor.fetchone()
         if data is not None:
-            flash("Username '{}' already exsists".format(acc.username), 'error')
+            flash(f"Username '{acc.username}' already exsists", 'error')
             return redirect(url_for("signup"))
-        
+
         query = "SELECT * FROM users WHERE email = %s"
         cursor.execute(query, (acc.email, ))
         data = cursor.fetchone()
         if data is not None:
-            flash("Email '{}' already exsists".format(acc.email), 'error')
+            flash(f"Email '{acc.email}' already exsists", 'error')
             return redirect(url_for("signup"))
-        
-        insert_query = "INSERT INTO users(firstname,lastname,username,PASSWORD,email) VALUES(%s,%s,%s,%s,%s);"
-        cursor.execute(insert_query, (acc.firstname,acc.lastname,acc.username,acc.password,acc.email, ))
+
+        insert_query = "INSERT INTO users(firstname,lastname,username,PASSWORD,email)\
+        VALUES(%s,%s,%s,%s,%s);"
+        cursor.execute(insert_query, (acc.firstname,
+                                      acc.lastname,
+                                      acc.username,
+                                      acc.password,
+                                      acc.email,
+                                      )
+                                )
         mysql.commit()
-        cursor.execute("SELECT id FROM users WHERE username = %s AND email = %s;", (acc.username, acc.email, ))
+        cursor.execute("SELECT id FROM users WHERE username = %s\
+                        AND email = %s;", (acc.username, acc.email, ))
         data = cursor.fetchone()
         acc.id = data[0]
         cursor.close()
@@ -287,6 +369,14 @@ def newacc():
 
 @login_manager.user_loader
 def user_loader(user_id):
+    """Returns user object
+
+    Args:
+        user_id (str): The id of the user
+
+    Returns:
+        User: The loaded user object
+    """
     query = "SELECT * FROM users WHERE id = %s;"
     cursor = mysql.cursor()
     cursor.reset()
@@ -300,9 +390,10 @@ def user_loader(user_id):
                     fn = data[1],
                     ln = data[2]
                 )
-    
 
-    cursor.execute('SELECT id FROM users WHERE username = %s AND email = %s;', (user.username,user.email, ))
+
+    cursor.execute('SELECT id FROM users WHERE username = %s AND\
+                    email = %s;', (user.username,user.email, ))
     data = cursor.fetchone()
     user.id = data[0]
     cursor.reset()
@@ -311,7 +402,8 @@ def user_loader(user_id):
     for i in users_locations_reference:
         cursor.execute('SELECT * FROM locations WHERE id = %s',(i[2], ))
         location_data = cursor.fetchone()
-        cursor.execute('SELECT ST_X(coordinate) AS lon, ST_Y(coordinate) AS lat FROM location_details WHERE id = %s',(location_data[4],))
+        cursor.execute('SELECT ST_X(coordinate) AS lon, ST_Y(coordinate) AS lat\
+                        FROM location_details WHERE id = %s',(location_data[4],))
         location_details = cursor.fetchone()
         location_object = Location(
             name = location_data[2],
@@ -333,6 +425,11 @@ def user_loader(user_id):
 
 @app.route("/login", methods=["POST"])
 def login():
+    """Logs in user
+
+    Returns:
+        Response: Redirects user to /home or /login if user is incorrect
+    """
     if "username" in request.form and "password" in request.form:
         cursor = mysql.cursor()
         cursor.execute("SELECT * FROM users WHERE username = %s;", (request.form['username'], ))
@@ -358,11 +455,21 @@ def login():
 @app.route("/home", methods=["GET"])
 @login_required
 def home():
+    """The home endpoint
+
+    Returns:
+        str: The rendered html template
+    """
     return render_template("home.html", current_user = current_user)
 
 @app.route("/logout", methods=["GET"])
 @login_required
 def logout():
+    """The logout endpoint
+
+    Returns:
+        Response: Redirects client to / with 302 endpoint
+    """
     logout_user()
     return redirect('/'),302
 
@@ -370,6 +477,14 @@ def logout():
 @app.route('/delete_location/<name>')
 @login_required
 def delete_location(name):
+    """Deletes location
+
+    Args:
+        name (str): The location name
+
+    Returns:
+        Response: Redirects client to /home
+    """
     cursor = mysql.cursor()
     cursor.reset()
     query = 'SELECT * FROM users_locations WHERE user_id = %s'
@@ -379,12 +494,12 @@ def delete_location(name):
         # DELETE instance of location
         query = 'SELECT * FROM locations WHERE id = %s AND name = %s;'
         cursor.execute(query, (i[2], name, ))
-        location = cursor.fetchone()
-        if location is None:
+        location_data = cursor.fetchone()
+        if location_data is None:
             continue
         cursor.reset()
         query = 'DELETE FROM users_locations WHERE user_id = %s AND location_id = %s;'
-        cursor.execute(query,(current_user.id, location[0], ))
+        cursor.execute(query,(current_user.id, location_data[0], ))
         cursor.reset()
     # Commit and close cursor
     mysql.commit()
