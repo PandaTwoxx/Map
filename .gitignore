@@ -5,7 +5,7 @@ __pycache__/
 
 Session_Logs/
 .vscode
-
+docker/
 Docker-db.session.sql
 
 # C extensions
