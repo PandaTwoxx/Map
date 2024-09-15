@@ -1,29 +1,32 @@
 version: '3.8'
 
 services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - MYSQL_HOST="localhost"
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+    depends_on:
+      - db
   db:
-        image: mysql:8.0
-        ports:
-          - "3306:3306"
-        environment:
-          - MYSQL_ROOT_HOSTS=%
-          - MYSQL_DATABASE=map
-          - MYSQL_ROOT_PASSWORD=pasword123
-        volumes:
-          - ./docker/volume_mysql:/var/lib/mysql
-          # why is this not working?
-          - ./init_db:/docker-entrypoint-initdb.d
-#   web:
-#     build: .
-#     ports:
-#       - "8080:8080"
-#     develop:
-#       watch:
-#         - action: sync
-#           path: .
-#           target: /code
-#     depends_on:
-#       - db
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    volumes:
+      - ./docker/volume_mysql:/var/lib/mysql
+      - ./init_db:/docker-entrypoint-initdb.d
 
-# volumes:
-#   db_data:
+volumes:
+  db_data:
