@@ -141,7 +141,6 @@ def index():
 
 @app.route("/location_adder", methods=["POST", "GET"])
 @login_required
-# TODO: Figure out why do we have only one entry for different users in users_locations
 # whenever they add 2 exact same locations
 def location_adder():
     """Adds location to database
@@ -229,14 +228,12 @@ def location_adder():
         cursor.execute(query, (new_location.location.lon, new_location.location.lat))
 
         # Fetch the location_details ID
-        cursor.reset()
         query = "SELECT id FROM location_details WHERE\
         coordinate = ST_GeomFromText('POINT(%s %s)');"
         cursor.execute(query, (new_location.location.lon, new_location.location.lat))
         location_details_id = cursor.fetchone()
 
         # Insert into locations
-        cursor.reset()
         query = "INSERT INTO locations(address, name, description\
         , location_details_id) VALUES (%s, %s, %s, %s);"
         cursor.execute(
@@ -250,7 +247,6 @@ def location_adder():
         )
 
         # Fetch the location ID
-        cursor.reset()
         query = "SELECT id FROM locations WHERE address = %s AND name = %s\
         AND description = %s AND location_details_id = %s;"
         cursor.execute(
@@ -265,7 +261,6 @@ def location_adder():
         location_id = cursor.fetchone()
 
         # Insert into users_locations
-        cursor.reset()
         query = "INSERT INTO users_locations(user_id, location_id) VALUES (%s, %s);"
         cursor.execute(query, (user_id, location_id[0]))
 

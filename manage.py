@@ -1,17 +1,17 @@
 """Used for reading args"""
 import sys
 
-from service.runtime import run
+import service
 
 if __name__ == '__main__':
     if 'run' in sys.argv:
         print('Management console: Started Server')
-        run()
+        service.run()
     while True:
         command = input('Enter command: ')
         if command == 'run':
             print('Management console: Started Server')
-            run()
+            service.run()
         if command == 'exit':
             print('Abort: Ending session')
             break
