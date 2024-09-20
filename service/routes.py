@@ -156,6 +156,7 @@ def location_adder():
     ):
         location_details = geo_code(request.form["address"])
         cursor = mysql.cursor()
+        cursor.reset()
         new_location = None
         if location_details is not None:
             new_location = Location(
@@ -266,6 +267,7 @@ def location_adder():
 
         # Commit the change and close the cursor
         mysql.commit()
+        cursor.reset()
         cursor.close()
 
         flash("Address added successfully", "success")

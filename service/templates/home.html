@@ -1,29 +1,8 @@
-{% extends "home_nav.html" %}
+{% extends "layout/home_nav.html" %}
 
 {% block title %}Home{% endblock %}
 
 {% block content %}
-  {% with message = get_flashed_messages(category_filter=["success"]) %}
-        {% if message %}
-        <div class="alert alert-success">
-              {{message[0]}}
-        </div>
-        {% endif %}
-  {% endwith %}
-  {% with message = get_flashed_messages(category_filter=["error"]) %}
-      {% if message %}
-          <div class="alert alert-danger">
-              {{message[0]}}
-          </div>
-      {% endif %}
-  {% endwith %}
-  {% with message = get_flashed_messages(category_filter=["info"]) %}
-      {% if message %}
-          <div class="alert alert-info">
-              {{message[0]}}
-          </div>
-      {% endif %}
-  {% endwith %}
   {% set count = namespace(value=0) %}
   {% for i in current_user.locations %}
     {% if count.value != 0 %}
