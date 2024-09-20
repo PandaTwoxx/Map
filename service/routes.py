@@ -2,6 +2,7 @@
 
 import uuid
 import os
+import time
 import os.path
 import re
 from http import HTTPStatus
@@ -33,15 +34,16 @@ db_host = os.getenv("DB_HOST")
 app = Flask(__name__)
 
 # Flask init
-app.config["SECRET_KEY"] = uuid.uuid4().hex
-app.config["MYSQL_HOST"] = "localhost"
-app.config["MYSQL_USER"] = db_host
-app.config["MYSQL_ROOT_PASSWORD"] = db_password
-app.config["MYSQL_DATABASE"] = db_name
+app.config["SECRET_KEY"] = os.urandom(24).hex()
+app.config["MYSQL_HOST"] = os.getenv("DB_HOST", "db")
+app.config["MYSQL_USER"] = os.getenv("DB_USER", "root")
+app.config["MYSQL_ROOT_PASSWORD"] = os.getenv("DB_ROOT_PASSWORD")
+app.config["MYSQL_DATABASE"] = os.getenv("DB_NAME")
+
 
 print("Connecting to database.")
-
-mysql = mysql.connector.connect(
+time.sleep(5)
+mysql = mysql = mysql.connector.connect(
     host=app.config["MYSQL_HOST"],
     user=app.config["MYSQL_USER"],
     password=app.config["MYSQL_ROOT_PASSWORD"],
