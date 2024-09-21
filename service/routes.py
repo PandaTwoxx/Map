@@ -1,9 +1,6 @@
 """Modules and libraries"""
-
-import uuid
 import os
 import time
-import os.path
 import re
 from http import HTTPStatus
 import mysql.connector
@@ -35,15 +32,19 @@ app = Flask(__name__)
 
 # Flask init
 app.config["SECRET_KEY"] = os.urandom(24).hex()
-app.config["MYSQL_HOST"] = os.getenv("DB_HOST", "db")
-app.config["MYSQL_USER"] = os.getenv("DB_USER", "root")
-app.config["MYSQL_ROOT_PASSWORD"] = os.getenv("DB_ROOT_PASSWORD")
-app.config["MYSQL_DATABASE"] = os.getenv("DB_NAME")
+app.config["MYSQL_HOST"] = "localhost"
+app.config["MYSQL_USER"] = db_host
+app.config["MYSQL_ROOT_PASSWORD"] = db_password
+app.config["MYSQL_DATABASE"] = db_name
 
 
 print("Connecting to database.")
-time.sleep(5)
-mysql = mysql = mysql.connector.connect(
+
+# Wait for the database to attach
+time.sleep(1.5)
+
+
+mysql = mysql.connector.connect(
     host=app.config["MYSQL_HOST"],
     user=app.config["MYSQL_USER"],
     password=app.config["MYSQL_ROOT_PASSWORD"],
