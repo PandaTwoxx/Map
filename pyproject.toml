@@ -16,6 +16,7 @@ flask-sqlalchemy = "^3.1.1"
 logging = "^0.4.9.6"
 geoalchemy2 = "^0.15.2"
 shapely = "^2.0.6"
+psycopg2-binary = "^2.9.9"
 
 [tool.poetry-auto-export]
 output = "requirements.txt"

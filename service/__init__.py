@@ -12,9 +12,6 @@ from service.routes import app, login_manager
 
 load_dotenv()
 
-time.sleep(1)
-db = SQLAlchemy(app)
-
 def config():
     """App configuration
     """
@@ -31,12 +28,6 @@ def config():
     app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://\
         {user}:{password}@{host}:{port}/{database}'
 
-    # Init db instance
-    print('Waiting for db to attach')
-    time.sleep(1)
-    print('Creating DB tables')
-    db.create_all()
-
     # Init Login Manager
     print('Initilizing login_manager')
     login_manager.init_app(app)
@@ -49,7 +40,13 @@ def config():
     login_manager.needs_refresh_message_category = "info"
     print('Initilization Complete!')
 
-
+print('Initilizing')
+config()
+# Init db instance
+print('Waiting for db to attach')
+db = SQLAlchemy(app)
+print('Creating DB tables')
+db.create_all()
 
 def run_thread():
     """Starts thread
@@ -92,8 +89,6 @@ def begin_server():
 def run():
     """Begins the Flask application
     """
-    print('Initilizing')
-    config()
 
 
     # Begin the server here
