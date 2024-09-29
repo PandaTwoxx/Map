@@ -40,14 +40,15 @@ def config():
     login_manager.needs_refresh_message_category = "info"
     print('Initilization Complete!')
 
-print('Initilizing')
-config()
-# Init db instance
-print('Waiting for db to attach')
-db = SQLAlchemy(app)
-print('Creating DB tables')
-db.create_all()
-
+##############################################################################
+print('Initilizing')                                                        ##
+config()                                                                    ##
+# Init db instance                                                          ##
+print('Waiting for db to attach')                                           ##
+db = SQLAlchemy(app)                                                        ##
+print('Creating DB tables')                                                 ##
+db.create_all()                                                             ##
+##############################################################################
 def run_thread():
     """Starts thread
     """

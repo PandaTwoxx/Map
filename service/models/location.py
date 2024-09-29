@@ -5,7 +5,7 @@ All of the models are stored in this module
 """
 
 import logging
-from service.models import PersistentBase, DataValidationError
+from service.models import PersistentBase, DataValidationError, LocationDetails
 from service import db
 
 logger = logging.getLogger('flask.app')
@@ -78,7 +78,9 @@ class Location(db.Model, PersistentBase):
             self.name = data['name']
             self.description = data['description']
             self.location_details_id = data['location_details_id']
-            self.location_details.deserialize(data['location_details'])
+            location_detail = LocationDetails()
+            location_detail.deserialize(data['location_details'])
+            self.location_details = location_detail
 
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
