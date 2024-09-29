@@ -1,9 +1,9 @@
 """Modules and libraries"""
 import os
-import time
 import re
+
 from http import HTTPStatus
-import mysql.connector
+from flask_sqlalchemy import SQLAlchemy
 
 from flask import Flask, render_template, request, redirect, url_for, abort, flash
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -19,67 +19,21 @@ from service.classes import User, Location, LocationDetails
 from service.utils import geo_code
 
 
+
+
 load_dotenv()
 
 geocoding_api_key = os.getenv("GEO_CODING_API")
 googlemaps_api_key = os.getenv("GOOGLE_MAPS_API")
-db_password = os.getenv("DB_PASSWORD")
-db_name = os.getenv("DB_NAME")
-db_host = os.getenv("DB_HOST")
 
 
 app = Flask(__name__)
 
-# Flask init
-app.config["SECRET_KEY"] = os.urandom(24).hex()
-app.config["MYSQL_HOST"] = "localhost"
-app.config["MYSQL_USER"] = db_host
-app.config["MYSQL_ROOT_PASSWORD"] = db_password
-app.config["MYSQL_DATABASE"] = db_name
 
 
-print("Connecting to database.")
-
-# Wait for the database to attach
-time.sleep(1.5)
-
-
-mysql = mysql.connector.connect(
-    host=app.config["MYSQL_HOST"],
-    user=app.config["MYSQL_USER"],
-    password=app.config["MYSQL_ROOT_PASSWORD"],
-    database=app.config["MYSQL_DATABASE"],
-    port=3306,
-)
-
-
-def test_connection():
-    """Tests connection to database"""
-    # Create mysql cursor
-    cursor = mysql.cursor()
-
-    # test the connection
-    cursor.execute("SELECT DATABASE()")
-    data = cursor.fetchone()
-    # if you see the following message in your terminal -- you did everything correct
-    print("_________________________SUCCESS!___________________________")
-    print("Connected to database:", data[0])
-
-    # close the cursor and connection objects
-    cursor.close()
-
-
-test_connection()
-
+# Login Manager creation
 login_manager = LoginManager()
-login_manager.init_app(app)
 
-login_manager.login_view = "/login_page"
-login_manager.refresh_view = "/login_page"
-login_manager.needs_refresh_message = (
-    "To protect your account, please reauthenticate to access this page."
-)
-login_manager.needs_refresh_message_category = "info"
 
 
 def validate_form(user: User):
