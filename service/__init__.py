@@ -4,13 +4,18 @@ import time
 import threading
 import sys
 import uuid
+import logging
 
 from waitress import serve
 from dotenv import load_dotenv
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from service.routes import app, login_manager
+from service.common import log_handlers
 
 load_dotenv()
+
+app = Flask(__name__)
 
 def config():
     """App configuration
@@ -23,8 +28,13 @@ def config():
     port = os.getenv('port')
     database = os.getenv('database')
 
+    # Secret Key
+    secret_key = os.urandom(24).hex()
+
     # App Configurations
-    app.config["SECRET_KEY"] = os.urandom(24).hex()
+    app.config["SECRET_KEY"] = secret_key
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["LOGGING_LEVEL"] = logging.info
     app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://\
         {user}:{password}@{host}:{port}/{database}'
 
@@ -46,6 +56,7 @@ config()                                                                    ##
 # Init db instance                                                          ##
 print('Waiting for db to attach')                                           ##
 db = SQLAlchemy(app)                                                        ##
+db.init_app(app)                                                            ##
 with app.app_context():                                                     ##
     print('Creating DB tables')                                             ##
     db.create_all()                                                         ##
@@ -91,7 +102,6 @@ def begin_server():
 def run():
     """Begins the Flask application
     """
-
 
     # Begin the server here
     print('Starting application')

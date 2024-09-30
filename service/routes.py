@@ -3,9 +3,8 @@ import os
 import re
 
 from http import HTTPStatus
-from flask_sqlalchemy import SQLAlchemy
 
-from flask import Flask, render_template, request, redirect, url_for, abort, flash
+from flask import render_template, request, redirect, url_for, abort, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from flask_login import (
@@ -17,6 +16,7 @@ from flask_login import (
 )
 from service.classes import User, Location, LocationDetails
 from service.utils import geo_code
+from service import app
 
 
 
@@ -27,7 +27,6 @@ geocoding_api_key = os.getenv("GEO_CODING_API")
 googlemaps_api_key = os.getenv("GOOGLE_MAPS_API")
 
 
-app = Flask(__name__)
 
 
 
