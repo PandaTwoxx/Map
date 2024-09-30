@@ -24,7 +24,7 @@ class User(db.Model, PersistentBase):
         DataValidationError: Invalid LocationDetail, No data or Bad Data
     """
 
-    
+
     ################################
     # Table Schema #################
     ################################
@@ -68,6 +68,7 @@ class User(db.Model, PersistentBase):
             "password": self.password
         }
         return result
+    
     def deserialize(self, data: dict) -> None:
         """
         Deserializes a Shopcart from a dictionary
@@ -94,6 +95,7 @@ class User(db.Model, PersistentBase):
                 "Invalid Shopcart: body of request contained bad or no data "
                 + str(error)
             ) from error
+        
     def __repr__(self) -> str:
         return f"<id:{self.id}, firstname:{self.firstname}, lastname:{self.lastname},\
               username:{self.username}, email:{self.email},\

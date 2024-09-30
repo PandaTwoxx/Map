@@ -39,7 +39,7 @@ class LocationDetails(db.Model, PersistentBase):
 
     __tablename__ = 'locations_details'
     id = db.Column(db.Integer, primary_key = True)
-    location = db.Column(Geometry(geometry_type='POINT', srid=4326), nullable = False)
+    location = db.Column(Geometry(geometry_type='POINT', srid=3857), nullable = False)
 
 
     ################################
@@ -58,6 +58,8 @@ class LocationDetails(db.Model, PersistentBase):
             "lat": ST_Y(self.location).scalar()
         }
         return result
+
+
     def deserialize(self, data: dict) -> None:
         """
         Deserializes a Shopcart from a dictionary
@@ -80,6 +82,8 @@ class LocationDetails(db.Model, PersistentBase):
                 "Invalid Shopcart: body of request contained bad or no data "
                 + str(error)
             ) from error
+
+
     def __repr__(self) -> str:
         return f"<id:{self.id}, lon:{ST_X(self.location).scalar()},\
           lat:{ST_Y(self.location).scalar()}"

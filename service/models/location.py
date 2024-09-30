@@ -43,8 +43,10 @@ class Location(db.Model, PersistentBase):
     address = db.Column(db.String(255), nullable = False)
     name = db.Column(db.String(255), nullable = False)
     description = db.Column(db.String(255), nullable = False)
-    location_details_id = db.Column(db.Integer, db.ForeignKey('location_details.id', ondelete='CASCADE'))
-    location_details = db.relationship('LocationDetails', backref='locations')
+    location_details_id = db.Column(
+                                    db.Integer,
+                                    db.ForeignKey('location_details.id', ondelete='CASCADE')
+                                    )
 
     ################################
     # SERIALIZE/DESERIALIZE ########
@@ -62,9 +64,10 @@ class Location(db.Model, PersistentBase):
             "name": self.name,
             "description": self.description,
             "location_details_id": self.location_details_id,
-            "location_details": self.location_details.serialize()
         }
         return result
+
+
     def deserialize(self, data: dict) -> None:
         """
         Deserializes a Shopcart from a dictionary
@@ -80,7 +83,6 @@ class Location(db.Model, PersistentBase):
             self.location_details_id = data['location_details_id']
             location_detail = LocationDetails()
             location_detail.deserialize(data['location_details'])
-            self.location_details = location_detail
 
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
@@ -93,7 +95,8 @@ class Location(db.Model, PersistentBase):
                 "Invalid Shopcart: body of request contained bad or no data "
                 + str(error)
             ) from error
+
+
     def __repr__(self) -> str:
         return f"<id:{self.id}, address:{self.address}, name:{self.name},\
-              description:{self.description}, location_details_id:{self.location_details_id},\
-                location_details:{self.location_details}>"
+              description:{self.description}, location_details_id:{self.location_details_id}>"
