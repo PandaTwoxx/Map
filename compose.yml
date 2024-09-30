@@ -15,7 +15,6 @@ services:
       - POSTGRES_USER=${user}
       
     volumes:
-      - ./docker/volume_mysql:/var/lib/mysql
       - ./init_db:/docker-entrypoint-initdb.d
 
 volumes:

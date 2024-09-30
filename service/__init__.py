@@ -46,8 +46,9 @@ config()                                                                    ##
 # Init db instance                                                          ##
 print('Waiting for db to attach')                                           ##
 db = SQLAlchemy(app)                                                        ##
-print('Creating DB tables')                                                 ##
-db.create_all()                                                             ##
+with app.app_context():                                                     ##
+    print('Creating DB tables')                                             ##
+    db.create_all()                                                         ##
 ##############################################################################
 def run_thread():
     """Starts thread
