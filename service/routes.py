@@ -4,7 +4,7 @@ import re
 
 from http import HTTPStatus
 
-from flask import render_template, request, redirect, url_for, abort, flash
+from flask import render_template, request, redirect, url_for, abort, flash, Flask
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from flask_login import (
@@ -28,7 +28,7 @@ googlemaps_api_key = os.getenv("GOOGLE_MAPS_API")
 
 
 
-
+app = Flask(__name__)
 
 # Login Manager creation
 login_manager = LoginManager()

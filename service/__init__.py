@@ -15,7 +15,6 @@ from service.common import log_handlers
 
 load_dotenv()
 
-app = Flask(__name__)
 
 def config():
     """App configuration
